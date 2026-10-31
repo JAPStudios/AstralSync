@@ -1,0 +1,6 @@
+{
+  "name": "AstralSync",
+  "description": "Astronomical chronometer syncing human life to true solar & celestial time: 00:00 sunrise clock, sub-microsecond precision, planetary calendar, and circadian health competitor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
