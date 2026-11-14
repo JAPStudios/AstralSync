@@ -8,11 +8,11 @@ import java.util.TimeZone
 
 /**
  * Planetary Astral Calendar Engine implementing:
- * - 30.4375 days per month (12-month model) and 28.096 days (13-month lunar model)
+ * - Twelve equal-duration months of 30.4375 days each
  * - True Earth Age Epoch (4.54 billion years from planetary birth)
- * - New System Month Order: April, June, May, February, Quintilis, Sextillia, September, October, November, December, Undecimus/March, January
- * - 4 Solar Seasons: Lent (Spring forth), Sem (Together as ume), Autumnus (Harvest), Winter (Time of water)
- * - Mythological Zodiac Gods, Chinese Zodiac animals, and Mayan Tzolk'in Day Signs
+ * - New System Month Order: April, June, May, February, Quintilis, Sextillia, September, October, November, December, March, January
+ * - Four equal-duration calendar seasons, with northern and southern ordering
+ * - Astral archetypes, Gregorian-year Chinese zodiac approximations, and a 20-day name cycle
  * - Deep quantum chronometry down to Planck time
  */
 object AstralCalendarEngine {
@@ -66,7 +66,7 @@ object AstralCalendarEngine {
         "Horse", "Goat", "Monkey", "Rooster", "Dog", "Pig"
     )
 
-    val MAYAN_TZOLKIN_SIGNS = listOf(
+    val MAYAN_DAY_NAMES = listOf(
         "Crocodile (Imix)", "Wind (Ik')", "House (Ak'b'al)", "Lizard (K'an)", "Serpent (Chikchan)",
         "Death (Kimi)", "Deer (Manik')", "Rabbit (Lamat)", "Water (Muluk)", "Dog (Ok)",
         "Monkey (Chuwen)", "Grass (Eb')", "Reed (B'en)", "Jaguar (Ix)", "Eagle (Men)",
@@ -107,14 +107,58 @@ object AstralCalendarEngine {
         val zeptoseconds: String,
         val yoctoseconds: String,
         val planckTimes: String,
-        val activeBiologicalTrigger: String?
+        val activeTimingReference: String?
     )
+
+    /**
+     * Validates a proleptic Gregorian date without silently normalizing invalid days.
+     */
+    fun isValidGregorianDate(year: Int, month: Int, day: Int): Boolean {
+        if (year !in 1..9999 || month !in 1..12) return false
+        val daysInMonth = when (month) {
+            2 -> if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)) 29 else 28
+            4, 6, 9, 11 -> 30
+            else -> 31
+        }
+        return day in 1..daysInMonth
+    }
+
+    /**
+     * Rejects local clock times skipped by a time-zone transition, such as 02:30
+     * on a spring-forward date.
+     */
+    fun isValidLocalDateTime(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        timeZone: TimeZone
+    ): Boolean {
+        if (!isValidGregorianDate(year, month, day) || hour !in 0..23 || minute !in 0..59) return false
+        val calendar = Calendar.getInstance(timeZone).apply {
+            isLenient = false
+            clear()
+            set(year, month - 1, day, hour, minute, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return try {
+            calendar.timeInMillis
+            true
+        } catch (_: IllegalArgumentException) {
+            false
+        }
+    }
 
     /**
      * Converts a given timestamp (or Gregorian date) into the AstralSync New System Date.
      */
-    fun calculateAstralDate(timestampMillis: Long, isSouthernHemisphere: Boolean = false): AstralDateResult {
-        val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = timestampMillis }
+    fun calculateAstralDate(
+        timestampMillis: Long,
+        isSouthernHemisphere: Boolean = false,
+        timeZone: TimeZone = TimeZone.getTimeZone("UTC")
+    ): AstralDateResult {
+        val cal = Calendar.getInstance(timeZone).apply { timeInMillis = timestampMillis }
         val gYear = cal.get(Calendar.YEAR)
         val dayOfYear = cal.get(Calendar.DAY_OF_YEAR)
         val daysInGregorianYear = cal.getActualMaximum(Calendar.DAY_OF_YEAR)
@@ -161,11 +205,14 @@ object AstralCalendarEngine {
         val chineseIndex = Math.floorMod(gYear - 4, 12)
         val chineseSign = CHINESE_ANIMALS[chineseIndex]
 
-        // Mayan Tzolk'in Sign (20-day cycle)
-        // Correlated: Day count mod 20
-        val totalEpochDays = (gYear * 365.25 + totalDaysInYear).toLong()
-        val mayanIndex = Math.floorMod(totalEpochDays, 20).toInt()
-        val mayanSign = MAYAN_TZOLKIN_SIGNS[mayanIndex]
+        // A 20-day name rotation anchored to 0001-01-01 in the proleptic
+        // Gregorian calendar. This is not a full GMT-correlated Tzolk'in date.
+        val yearsBeforeCurrent = gYear.toLong() - 1L
+        val daysBeforeCurrentYear = 365L * yearsBeforeCurrent +
+            yearsBeforeCurrent / 4L - yearsBeforeCurrent / 100L + yearsBeforeCurrent / 400L
+        val absoluteGregorianDay = daysBeforeCurrentYear + dayOfYear.toLong() - 1L
+        val mayanIndex = Math.floorMod(absoluteGregorianDay, 20L).toInt()
+        val mayanSign = MAYAN_DAY_NAMES[mayanIndex]
 
         val earthAgeFmt = String.format("%.4f Billion Years", earthAge / 1_000_000_000.0)
         val dayFmt = String.format("%.2f", dayInMonth)
@@ -217,18 +264,17 @@ object AstralCalendarEngine {
         val fractionalSeconds = elapsed.remainder(BigDecimal.ONE)
         val totalMicros = (elapsedSeconds * 1_000_000.0).toLong()
 
-        // Trigger windows are centered on each period boundary, rather than only
-        // recognizing the interval after a boundary.
+        // Timing-reference windows are centered on each period boundary.
         fun nearPeriodBoundary(periodMicros: Long, toleranceMicros: Long): Boolean {
             val phase = Math.floorMod(totalMicros, periodMicros)
             return minOf(phase, periodMicros - phase) <= toleranceMicros
         }
 
-        val trigger = when {
-            nearPeriodBoundary(350_000L, 5_000L) -> "👁️ Eye Blink Quantum Window (~350,000 µs)"
-            nearPeriodBoundary(150_000L, 5_000L) -> "🫰 Finger Snap Quantum Window (~150,000 µs)"
-            nearPeriodBoundary(4_000L, 500L) -> "📸 Camera Shutter Open (~4,000 µs)"
-            nearPeriodBoundary(1_000L, 200L) -> "⚡ Camera Flash Pulse (~1,000 µs)"
+        val timingReference = when {
+            nearPeriodBoundary(350_000L, 5_000L) -> "350 ms reference interval"
+            nearPeriodBoundary(150_000L, 5_000L) -> "150 ms reference interval"
+            nearPeriodBoundary(4_000L, 500L) -> "4 ms exposure reference interval"
+            nearPeriodBoundary(1_000L, 200L) -> "1 ms flash reference interval"
             else -> null
         }
 
@@ -256,7 +302,7 @@ object AstralCalendarEngine {
             zeptoseconds = zeptoExp,
             yoctoseconds = yoctoExp,
             planckTimes = planckExp,
-            activeBiologicalTrigger = trigger
+            activeTimingReference = timingReference
         )
     }
 }

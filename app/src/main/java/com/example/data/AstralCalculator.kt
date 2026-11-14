@@ -11,15 +11,25 @@ import kotlin.math.*
  */
 object AstralCalculator {
 
+    enum class SolarDayCondition { NORMAL, POLAR_DAY, POLAR_NIGHT }
+
+    enum class AstronomicalNightCondition { STARTS, ALL_DAY, DOES_NOT_OCCUR }
+
     data class SolarMilestones(
-        val sunriseStartMillis: Long,     // Top edge touches horizon (00:00:00 Astral Time)
-        val sunriseEndMillis: Long,       // Bottom edge touches horizon (full disk rise)
-        val goldenHourMorningEnd: Long,   // 6 degrees above horizon
-        val solarNoonMillis: Long,        // Sun at zenith / highest point
-        val goldenHourEveningStart: Long, // 6 degrees above horizon
-        val sunsetStartMillis: Long,      // Bottom edge touches horizon
-        val sunsetEndMillis: Long,        // Sun completely disappears below horizon
-        val nightStartMillis: Long        // Sun 18 degrees below horizon (astronomical twilight)
+        val sunriseStartMillis: Long,
+        val sunriseEndMillis: Long,
+        val goldenHourMorningEnd: Long,
+        val solarNoonMillis: Long,
+        val goldenHourEveningStart: Long,
+        val sunsetStartMillis: Long,
+        val sunsetEndMillis: Long,
+        val nightStartMillis: Long,
+        val solarDayCondition: SolarDayCondition,
+        val sunriseOccurs: Boolean,
+        val sunsetOccurs: Boolean,
+        val morningGoldenHourOccurs: Boolean,
+        val eveningGoldenHourOccurs: Boolean,
+        val astronomicalNightCondition: AstronomicalNightCondition
     )
 
     data class SolarPosition(
@@ -39,6 +49,7 @@ object AstralCalculator {
         val progressPercentOfDay: Float,
         val currentMilestone: String,
         val nextMilestone: String,
+        val timeAnchorLabel: String,
         val timeUntilNextMilestone: String
     )
 
@@ -53,16 +64,20 @@ object AstralCalculator {
         val dayOfYear = cal.get(Calendar.DAY_OF_YEAR)
         val daysInYear = if (cal.getActualMaximum(Calendar.DAY_OF_YEAR) == 366) 366.0 else 365.0
 
-        // Day start in UTC
-        val midnightCal = Calendar.getInstance(timeZone).apply {
-            timeInMillis = timestampMillis
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val midnightMillis = midnightCal.timeInMillis
-        val tzOffsetHours = timeZone.getOffset(timestampMillis) / 3600000.0
+        // Build UTC midnight for the local calendar date. Solar events are absolute
+        // instants; calculating them from local midnight plus the offset at midday
+        // produces a one-hour error on daylight-saving transition dates.
+        val utcMidnightMillis = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            clear()
+            set(
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH),
+                0,
+                0,
+                0
+            )
+        }.timeInMillis
 
         // Fractional year in radians
         // NOAA fractional-year angle evaluated at local solar noon.
@@ -79,54 +94,62 @@ object AstralCalculator {
 
         val latRad = Math.toRadians(latitude)
 
-        // Solar Noon in minutes from midnight UTC
+        // Solar noon in UTC minutes from UTC midnight.
         val solarNoonUtcMinutes = 720.0 - 4.0 * longitude - eqtime
-        val solarNoonLocalMinutes = solarNoonUtcMinutes + tzOffsetHours * 60.0
-        val solarNoonMillis = midnightMillis + (solarNoonLocalMinutes * 60.0 * 1000.0).toLong()
+        val solarNoonMillis = utcMidnightMillis + (solarNoonUtcMinutes * 60_000.0).toLong()
 
-        // Helper to get time for zenith angle in degrees
-        fun getTimeForZenith(zenithDeg: Double, isRise: Boolean): Long {
+        fun cosineHourAngle(zenithDeg: Double): Double {
             val zenithRad = Math.toRadians(zenithDeg)
-            val cosHa = (cos(zenithRad) - sin(latRad) * sin(decl)) / (cos(latRad) * cos(decl))
-            if (cosHa > 1.0) {
-                // Polar night: never rises
-                return solarNoonMillis
-            } else if (cosHa < -1.0) {
-                // Midnight sun: never sets
-                return solarNoonMillis
-            }
-            val haRad = acos(cosHa)
-            val haDeg = Math.toDegrees(haRad)
-            val deltaMinutes = 4.0 * haDeg
-            val minutes = if (isRise) solarNoonLocalMinutes - deltaMinutes else solarNoonLocalMinutes + deltaMinutes
-            return midnightMillis + (minutes * 60.0 * 1000.0).toLong()
+            return (cos(zenithRad) - sin(latRad) * sin(decl)) / (cos(latRad) * cos(decl))
         }
 
-        // Zenith angles:
-        // Standard sunrise/sunset (top edge on horizon): 90.833° (90°50')
-        val sunriseStart = getTimeForZenith(90.833, true)
-        // Sunrise ends (bottom edge touches horizon, full disk risen): ~90.25°
-        val sunriseEnd = getTimeForZenith(90.25, true)
-        // Golden hour morning (sun reaches 6° altitude): 84.0°
-        val goldenHourMorning = getTimeForZenith(84.0, true)
-        // Golden hour evening (sun begins descent at 6° altitude): 84.0°
-        val goldenHourEvening = getTimeForZenith(84.0, false)
-        // Sunset starts (bottom edge touches horizon): ~90.25°
-        val sunsetStart = getTimeForZenith(90.25, false)
-        // Sunset ends (sun disappears completely): 90.833°
-        val sunsetEnd = getTimeForZenith(90.833, false)
-        // Night starts (astronomical twilight, 18° below horizon): 108.0°
-        val nightStart = getTimeForZenith(108.0, false)
+        fun getTimeForZenith(zenithDeg: Double, isRise: Boolean): Long? {
+            val cosHa = cosineHourAngle(zenithDeg)
+            if (!cosHa.isFinite() || cosHa !in -1.0..1.0) return null
 
+            val hourAngleDeg = Math.toDegrees(acos(cosHa))
+            val deltaMillis = (4.0 * hourAngleDeg * 60_000.0).toLong()
+            return if (isRise) solarNoonMillis - deltaMillis else solarNoonMillis + deltaMillis
+        }
+
+        val sunriseStartEvent = getTimeForZenith(90.833, true)
+        val sunriseEndEvent = getTimeForZenith(90.25, true)
+        val morningGoldenHourEvent = getTimeForZenith(84.0, true)
+        val eveningGoldenHourEvent = getTimeForZenith(84.0, false)
+        val sunsetStartEvent = getTimeForZenith(90.25, false)
+        val sunsetEndEvent = getTimeForZenith(90.833, false)
+        val nightStartEvent = getTimeForZenith(108.0, false)
+
+        val sunriseCosHa = cosineHourAngle(90.833)
+        val solarDayCondition = when {
+            sunriseCosHa > 1.0 -> SolarDayCondition.POLAR_NIGHT
+            sunriseCosHa < -1.0 -> SolarDayCondition.POLAR_DAY
+            else -> SolarDayCondition.NORMAL
+        }
+        val nightCosHa = cosineHourAngle(108.0)
+        val astronomicalNightCondition = when {
+            nightCosHa > 1.0 -> AstronomicalNightCondition.ALL_DAY
+            nightCosHa < -1.0 -> AstronomicalNightCondition.DOES_NOT_OCCUR
+            else -> AstronomicalNightCondition.STARTS
+        }
+
+        // Keep the legacy timestamp fields populated for existing consumers. Availability
+        // flags prevent the fallback solar-noon value from being presented as an event.
         return SolarMilestones(
-            sunriseStartMillis = sunriseStart,
-            sunriseEndMillis = sunriseEnd,
-            goldenHourMorningEnd = goldenHourMorning,
+            sunriseStartMillis = sunriseStartEvent ?: solarNoonMillis,
+            sunriseEndMillis = sunriseEndEvent ?: solarNoonMillis,
+            goldenHourMorningEnd = morningGoldenHourEvent ?: solarNoonMillis,
             solarNoonMillis = solarNoonMillis,
-            goldenHourEveningStart = goldenHourEvening,
-            sunsetStartMillis = sunsetStart,
-            sunsetEndMillis = sunsetEnd,
-            nightStartMillis = nightStart
+            goldenHourEveningStart = eveningGoldenHourEvent ?: solarNoonMillis,
+            sunsetStartMillis = sunsetStartEvent ?: solarNoonMillis,
+            sunsetEndMillis = sunsetEndEvent ?: solarNoonMillis,
+            nightStartMillis = nightStartEvent ?: solarNoonMillis,
+            solarDayCondition = solarDayCondition,
+            sunriseOccurs = sunriseStartEvent != null && sunriseEndEvent != null,
+            sunsetOccurs = sunsetStartEvent != null && sunsetEndEvent != null,
+            morningGoldenHourOccurs = morningGoldenHourEvent != null,
+            eveningGoldenHourOccurs = eveningGoldenHourEvent != null,
+            astronomicalNightCondition = astronomicalNightCondition
         )
     }
 
@@ -172,46 +195,59 @@ object AstralCalculator {
             progressPercentOfDay = progress,
             currentMilestone = currentMilestone,
             nextMilestone = nextMilestone,
+            timeAnchorLabel = if (milestones.sunriseOccurs) "Sunrise" else "Solar noon",
             timeUntilNextMilestone = timeUntil
         )
     }
 
     private fun determineMilestonePhase(currentMillis: Long, m: SolarMilestones): Triple<String, String, String> {
-        val list = listOf(
-            m.sunriseStartMillis to "Sunrise Starts (00:00)",
-            m.sunriseEndMillis to "Sunrise Ends (Full Disk)",
-            m.goldenHourMorningEnd to "Morning Golden Hour Ends",
-            m.solarNoonMillis to "Solar Noon (Zenith)",
-            m.goldenHourEveningStart to "Evening Golden Hour Starts",
-            m.sunsetStartMillis to "Sunset Starts (Horizon Touch)",
-            m.sunsetEndMillis to "Sunset Ends (Disappeared)",
-            m.nightStartMillis to "Astronomical Night Starts"
-        ).sortedBy { it.first }
+        when (m.solarDayCondition) {
+            SolarDayCondition.POLAR_DAY ->
+                return Triple("Continuous Daylight (Midnight Sun)", "Sunset does not occur", "—")
+            SolarDayCondition.POLAR_NIGHT ->
+                return Triple("Continuous Polar Night", "Sunrise does not occur", "—")
+            SolarDayCondition.NORMAL -> Unit
+        }
 
-        var current = "Night Phase (Astronomical)"
-        var next = list.first().second
-        var nextTime = list.first().first
+        val events = buildList {
+            if (m.sunriseOccurs) {
+                add(m.sunriseStartMillis to "Sunrise Starts (00:00)")
+                add(m.sunriseEndMillis to "Sunrise Ends (Full Disk)")
+            }
+            if (m.morningGoldenHourOccurs) add(m.goldenHourMorningEnd to "Morning Golden Hour Ends")
+            add(m.solarNoonMillis to "Solar Noon (Highest Position)")
+            if (m.eveningGoldenHourOccurs) add(m.goldenHourEveningStart to "Evening Golden Hour Starts")
+            if (m.sunsetOccurs) {
+                add(m.sunsetStartMillis to "Sunset Starts (Horizon Touch)")
+                add(m.sunsetEndMillis to "Sunset Ends (Disappeared)")
+            }
+            if (m.astronomicalNightCondition == AstronomicalNightCondition.STARTS) {
+                add(m.nightStartMillis to "Astronomical Night Starts")
+            }
+        }.sortedBy { it.first }
 
-        for (i in list.indices) {
-            if (currentMillis >= list[i].first) {
-                current = list[i].second
-                if (i + 1 < list.size) {
-                    next = list[i + 1].second
-                    nextTime = list[i + 1].first
+        var current = "Night Phase"
+        var next = events.first().second
+        var nextTime = events.first().first
+
+        for (i in events.indices) {
+            if (currentMillis >= events[i].first) {
+                current = events[i].second
+                if (i + 1 < events.size) {
+                    next = events[i + 1].second
+                    nextTime = events[i + 1].first
                 } else {
                     next = "Next Sunrise (00:00)"
-                    nextTime = list.first().first + 24 * 3600 * 1000
+                    nextTime = events.first().first + 24L * 60L * 60L * 1000L
                 }
             }
         }
 
-        val remaining = (nextTime - currentMillis).coerceAtLeast(0)
-        val remHours = remaining / 3600000
-        val remMinutes = (remaining % 3600000) / 60000
-        val remSecs = (remaining % 60000) / 1000
-        val timeUntilStr = String.format("%02d:%02d:%02d", remHours, remMinutes, remSecs)
-
-        return Triple(current, next, timeUntilStr)
+        val remaining = (nextTime - currentMillis).coerceAtLeast(0L)
+        val remHours = remaining / 3_600_000L
+        val remMinutes = (remaining % 3_600_000L) / 60_000L
+        val remSecs = (remaining % 60_000L) / 1_000L
+        return Triple(current, next, String.format("%02d:%02d:%02d", remHours, remMinutes, remSecs))
     }
 
     /**

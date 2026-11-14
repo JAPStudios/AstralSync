@@ -54,7 +54,7 @@ fun CircadianHealthScreen(
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
-                                text = "ASTRONOMICALLY SYNCHRONIZED BIOLOGY",
+                                text = "SUNRISE-REFERENCED SOLAR CONTEXT",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
                                 color = AuroraGreen,
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -65,19 +65,19 @@ fun CircadianHealthScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "100% Sunlight Immersion Protocol",
+                        text = "Sunrise-Referenced Daily Timeline",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = TextPrimary
                     )
                     Text(
-                        text = "By defining 00:00 at immediate horizon sunrise, your daily rhythm receives 100% of available daylight for peak cortisol awakening response, mitochondrial ATP synthesis, and restorative sleep architecture.",
+                        text = "AstralSync defines 00:00 at estimated local sunrise and displays solar milestones. This is a timekeeping reference; it does not measure personal light exposure or determine an individual's circadian phase.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Live Biological Phase Status
+                    // Live Solar Horizon Status
                     Surface(
                         color = CosmicSurfaceVariant,
                         shape = RoundedCornerShape(14.dp),
@@ -106,12 +106,12 @@ fun CircadianHealthScreen(
                             }
                             Column {
                                 Text(
-                                    text = if (state.solarPosition.isDaytime) "Daylight Biological Window Active" else "Nocturnal Melatonin Window Active",
+                                    text = if (state.solarPosition.isDaytime) "Sun above the daylight threshold" else "Sun below the daylight threshold",
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                     color = TextPrimary
                                 )
                                 Text(
-                                    text = "Current Astral Hour: ${String.format("%02d:%02d", state.astralTime.hours, state.astralTime.minutes)} • Elevation: ${String.format("%.1f°", state.solarPosition.elevationDeg)}",
+                                    text = "Astral time (${state.astralTime.timeAnchorLabel} anchor): ${String.format("%02d:%02d", state.astralTime.hours, state.astralTime.minutes)} • Elevation: ${String.format("%.1f°", state.solarPosition.elevationDeg)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )
@@ -122,10 +122,10 @@ fun CircadianHealthScreen(
             }
         }
 
-        // Biological Timeline Windows (replacing Sleep Cycle, Fitbit, Pokémon Sleep, Noom)
+        // Solar Timeline Reference Points
         item {
             Text(
-                text = "Circadian Biological Phases",
+                text = "Solar Timeline Reference Points",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = TextPrimary
             )
@@ -134,30 +134,34 @@ fun CircadianHealthScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 CircadianPhaseCard(
-                    timeRange = "Astral 00:00 – 01:30",
-                    title = "Phase 1: Cortisol Awakening & Lux Intake",
-                    benefit = "View natural horizon sunlight within 90 minutes of 00:00 sunrise. Activates melanopsin retinal ganglion cells to suppress melatonin and set the circadian master clock.",
+                    timeRange = if (state.milestones.sunriseOccurs) "Astral 00:00 – 01:30" else "No sunrise; noon anchor",
+                    title = "Phase 1: Morning Light Period",
+                    benefit = "Daylight is an environmental cue for circadian timing. AstralSync estimates sunrise but does not measure light reaching the eyes or prescribe an exposure duration.",
                     accent = SolarGold,
                     icon = Icons.Default.Visibility
                 )
                 CircadianPhaseCard(
                     timeRange = "Astral 02:00 – 06:00",
-                    title = "Phase 2: Peak Cognitive & Metabolic Engine",
-                    benefit = "Leading into Solar Noon zenith. Core body temperature climbs, insulin sensitivity peaks, and deep analytical focus is maximally supported by cosmic solar irradiance.",
+                    title = "Phase 2: Solar Noon",
+                    benefit = "Solar noon is the Sun's highest daily position. Its local clock time varies by location and date; this marker does not predict peak cognition or metabolism.",
                     accent = SolarAmber,
                     icon = Icons.Default.Psychology
                 )
                 CircadianPhaseCard(
                     timeRange = "Astral ~11:00 – Sunset",
-                    title = "Phase 3: Golden Hour Wind-Down & Red Lux",
-                    benefit = "Low solar angle triggers natural retinal filtering of blue wavelengths. Encourages pineal gland signaling and gradual adenosine build-up for effortless evening wind-down.",
+                    title = "Phase 3: Evening Solar Transition",
+                    benefit = "The Sun approaches the horizon and its elevation decreases. This is an astronomical marker, not a prediction of melatonin production or sleep readiness.",
                     accent = SolarHorizon,
                     icon = Icons.Default.WbTwilight
                 )
                 CircadianPhaseCard(
-                    timeRange = "Night Starts (Astronomical Twilight)",
-                    title = "Phase 4: Astronomical Deep Sleep & Glymphatic Clearance",
-                    benefit = "Sun drops 18° below horizon. True cosmic darkness allows peak melatonin release, deep slow-wave REM sleep, cellular repair, and brain glymphatic toxin drainage.",
+                    timeRange = when (state.milestones.astronomicalNightCondition) {
+                        com.example.data.AstralCalculator.AstronomicalNightCondition.STARTS -> "Night starts (astronomical twilight)"
+                        com.example.data.AstralCalculator.AstronomicalNightCondition.ALL_DAY -> "Astronomical night all day"
+                        com.example.data.AstralCalculator.AstronomicalNightCondition.DOES_NOT_OCCUR -> "No astronomical night today"
+                    },
+                    title = "Phase 4: Astronomical Night",
+                    benefit = "Astronomical night begins when the Sun is 18° below the horizon, where that threshold occurs. It does not identify sleep stages, melatonin levels, or biological recovery.",
                     accent = StarlightIndigo,
                     icon = Icons.Default.Nightlight
                 )
@@ -181,13 +185,13 @@ fun CircadianHealthScreen(
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Icon(Icons.Default.Explore, contentDescription = null, tint = CelestialCyan, modifier = Modifier.size(20.dp))
                             Text(
-                                text = "Astronomical Solar Compass",
+                                text = "Solar Direction",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                 color = TextPrimary
                             )
                         }
                         Text(
-                            text = "True Solar North",
+                            text = "Solar Azimuth",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextMuted
                         )
@@ -195,7 +199,7 @@ fun CircadianHealthScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Unlike magnetic phone compasses prone to electromagnetic interference, AstralSync computes absolute astronomical solar azimuth directly from NOAA ephemeris equations.",
+                        text = "AstralSync estimates the Sun's azimuth and elevation from location and time using NOAA-style equations. It does not measure magnetic heading and is not a navigation compass.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
@@ -224,13 +228,13 @@ fun CircadianHealthScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Free Public Utility vs Corporate Paywalls",
+                        text = "Solar Calculations and Feature Scope",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                         color = SolarGoldLight
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Competitors like Headspace ($70/yr), Noom ($70/mo), Fitbit Premium ($80/yr), and Sleep Cycle lock basic circadian telemetry behind predatory subscriptions. AstralSync is built as a non-profit scientific public utility honoring true planetary physics.",
+                        text = "AstralSync presents local solar-time calculations and astronomical milestones. It does not provide sleep tracking, clinical circadian telemetry, or medical assessment.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )

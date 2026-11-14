@@ -43,7 +43,8 @@ data class AstralUiState(
     ),
     val astralDate: AstralCalendarEngine.AstralDateResult = AstralCalendarEngine.calculateAstralDate(
         timestampMillis = System.currentTimeMillis(),
-        isSouthernHemisphere = false
+        isSouthernHemisphere = false,
+        timeZone = TimeZone.getTimeZone(LocationPresets.WINDHAM_NY.timeZoneId)
     ),
     val quantumChronometry: AstralCalendarEngine.QuantumChronometry = AstralCalendarEngine.computeQuantumChronometry(
         elapsedSeconds = 0.0,
@@ -66,7 +67,7 @@ enum class NavigationScreen(val label: String) {
     CALENDAR("Planetary Calendar"),
     HEALTH("Circadian Suite"),
     CALCULATOR("Converter"),
-    STRATEGY("Funding & Legal")
+    STRATEGY("Project")
 }
 
 data class AstralDateConversionResult(
@@ -126,7 +127,8 @@ class AstralViewModel : ViewModel() {
 
                 val astralDate = AstralCalendarEngine.calculateAstralDate(
                     timestampMillis = now,
-                    isSouthernHemisphere = _uiState.value.isSouthernHemisphere
+                    isSouthernHemisphere = _uiState.value.isSouthernHemisphere,
+                    timeZone = tz
                 )
 
                 val quantum = AstralCalendarEngine.computeQuantumChronometry(
@@ -146,8 +148,9 @@ class AstralViewModel : ViewModel() {
                     )
                 }
 
-                // Refresh the displayed clock and solar calculations at approximately 30 FPS
-                delay(33L)
+                // The clock displays whole seconds; a 1 Hz refresh avoids needless repeated
+                // calendar and solar calculations while keeping the display current.
+                delay(1000L)
             }
         }
     }
@@ -215,7 +218,19 @@ class AstralViewModel : ViewModel() {
 
     fun computeCalculation() {
         val state = _uiState.value
+        if (!AstralCalendarEngine.isValidLocalDateTime(
+                state.calcYear,
+                state.calcMonth,
+                state.calcDay,
+                state.calcHour,
+                state.calcMinute,
+                TimeZone.getTimeZone(state.calcLocation.timeZoneId)
+            )
+        ) return
+
         val cal = Calendar.getInstance(TimeZone.getTimeZone(state.calcLocation.timeZoneId)).apply {
+            isLenient = false
+            clear()
             set(Calendar.YEAR, state.calcYear)
             set(Calendar.MONTH, state.calcMonth - 1)
             set(Calendar.DAY_OF_MONTH, state.calcDay)
@@ -241,24 +256,26 @@ class AstralViewModel : ViewModel() {
 
         val astralDate = AstralCalendarEngine.calculateAstralDate(
             timestampMillis = targetMillis,
-            isSouthernHemisphere = state.calcLocation.latitude < 0
+            isSouthernHemisphere = state.calcLocation.latitude < 0,
+            timeZone = TimeZone.getTimeZone(state.calcLocation.timeZoneId)
         )
 
-        val sunriseCal = Calendar.getInstance(TimeZone.getTimeZone(state.calcLocation.timeZoneId)).apply {
-            timeInMillis = milestones.sunriseStartMillis
+        val anchorMillis = if (milestones.sunriseOccurs) milestones.sunriseStartMillis else milestones.solarNoonMillis
+        val anchorCal = Calendar.getInstance(TimeZone.getTimeZone(state.calcLocation.timeZoneId)).apply {
+            timeInMillis = anchorMillis
         }
-        val sunriseStr = String.format("%02d:%02d", sunriseCal.get(Calendar.HOUR_OF_DAY), sunriseCal.get(Calendar.MINUTE))
+        val anchorStr = String.format("%02d:%02d", anchorCal.get(Calendar.HOUR_OF_DAY), anchorCal.get(Calendar.MINUTE))
 
         val gFmt = String.format("%04d-%02d-%02d %02d:%02d", state.calcYear, state.calcMonth, state.calcDay, state.calcHour, state.calcMinute)
         val aTimeFmt = String.format("%02d:%02d:%02d Astral", astralTime.hours, astralTime.minutes, astralTime.seconds)
 
         val explanation = buildString {
-            append("1. Local sunrise at ${state.calcLocation.name} was at $sunriseStr standard time (00:00 Astral Time).\n")
-            append("2. Elapsed time from sunrise to target time: ${astralTime.hours}h ${astralTime.minutes}m (${astralTime.totalSecondsFromSunrise.toInt()} seconds).\n")
-            append("3. Earth Age Year: ~4.54 Billion Years (${astralDate.earthAgeFormatted}).\n")
-            append("4. Planetary Month: Month ${astralDate.monthOrder} (${astralDate.monthName} - ${astralDate.monthMeaning}), Day ${astralDate.dayFormatted}.\n")
-            append("5. Astronomical Season: ${astralDate.seasonName} (${String.format("%.1f", astralDate.seasonDay)} / 91.31 days).\n")
-            append("6. Archetype: ${astralDate.zodiacGod.deity} (${astralDate.zodiacGod.sign}) | Chinese Zodiac: ${astralDate.chineseZodiac} | Mayan Tzolk'in: ${astralDate.mayanSign}.")
+            append("1. Local ${astralTime.timeAnchorLabel.lowercase()} at ${state.calcLocation.name} was at $anchorStr local time (00:00 Astral Time).\n")
+            append("2. Elapsed time from ${astralTime.timeAnchorLabel.lowercase()} to target time: ${astralTime.hours}h ${astralTime.minutes}m (${astralTime.totalSecondsFromSunrise.toInt()} seconds).\n")
+            append("3. Approximate Earth-age counter (${astralDate.earthAgeFormatted}).\n")
+            append("4. Astral month: ${astralDate.monthOrder} (${astralDate.monthName} - ${astralDate.monthMeaning}), Day ${astralDate.dayFormatted}.\n")
+            append("5. Astral calendar season: ${astralDate.seasonName} (${String.format("%.1f", astralDate.seasonDay)} / 91.31 days).\n")
+            append("6. Archetype: ${astralDate.zodiacGod.deity} (${astralDate.zodiacGod.sign}) | Chinese zodiac (Gregorian-year basis): ${astralDate.chineseZodiac} | Mayan 20-day name: ${astralDate.mayanSign}.")
         }
 
         val result = AstralDateConversionResult(

@@ -2,6 +2,7 @@ package com.example
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,6 +31,8 @@ import com.example.ui.NavigationScreen
 import com.example.ui.screens.*
 import com.example.ui.theme.*
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,10 +57,24 @@ fun AstralApp(viewModel: AstralViewModel = viewModel()) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
         ) {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            fun applyLocation(location: Location?) {
                 if (location != null) {
                     viewModel.setGpsLocation(location.latitude, location.longitude, "Local Device Horizon")
                 }
+            }
+
+            val cancellation = CancellationTokenSource()
+            fusedLocationClient.getCurrentLocation(
+                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                cancellation.token
+            ).addOnSuccessListener { location ->
+                if (location != null) {
+                    applyLocation(location)
+                } else {
+                    fusedLocationClient.lastLocation.addOnSuccessListener(::applyLocation)
+                }
+            }.addOnFailureListener {
+                fusedLocationClient.lastLocation.addOnSuccessListener(::applyLocation)
             }
         }
     }

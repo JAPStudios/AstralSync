@@ -21,8 +21,7 @@ object FundingStrategyData {
         val astralSyncAdvantage: String
     )
 
-    data class LegalPrecedent(
-        val caseName: String,
+    data class ScopeNote(
         val citation: String,
         val keyPrinciple: String,
         val applicationToAstralSync: String
@@ -30,51 +29,48 @@ object FundingStrategyData {
 
     val GRANT_PILLARS = listOf(
         GrantPillar(
-            category = "1. Circadian Biology & Public Health Grants",
+            category = "1. Scientific Validation & Research Collaboration",
             targetFunders = listOf(
-                "National Institutes of Health (NIH - NIGMS / NHLBI)",
-                "Wellcome Trust (Mental Health & Biological Rhythms)",
-                "National Science Foundation (NSF - Division of Integrative Organismal Systems)",
-                "Society for Research on Biological Rhythms (SRBR)"
+                "National Institutes of Health (program eligibility varies)",
+                "National Science Foundation (program eligibility varies)",
+                "Society for Research on Biological Rhythms (research community)"
             ),
-            valueProposition = "Traditional 24-hour artificial time zones induce chronic 'social jetlag'. AstralSync roots biological sleep-wake cycles in authentic local solar noon and sunrise, directly reducing circadian misalignment and sleep disorders.",
-            grantSizeRange = "$150,000 – $2,500,000",
+            valueProposition = "AstralSync implements sunrise-referenced timekeeping and solar-event estimates. Independent astronomy and chronobiology review could validate the calculations and assess potential research use; health outcomes are not established by the app.",
+            grantSizeRange = "Depends on the active funding call",
             actionSteps = listOf(
-                "Register as a 501(c)(3) tax-exempt scientific/educational organization or partner with a 501(c)(3) Fiscal Sponsor (e.g., Code for Science & Society, Open Collective Foundation).",
-                "Apply for NIH Small Business Innovation Research (SBIR / STTR) or R21 exploratory health grants targeting circadian rhythm synchronization.",
-                "Co-author validation studies with university chronobiology and sleep research departments."
+                "Review current official funding notices, applicant eligibility, and permitted project costs before pursuing a program.",
+                "Obtain independent review of solar calculations, time-zone handling, and the app's circadian-related descriptions.",
+                "Publish reproducible test cases, model assumptions, and known limitations."
             )
         ),
         GrantPillar(
-            category = "2. Open Source & Digital Public Infrastructure Grants",
+            category = "2. Public Software & Digital Infrastructure",
             targetFunders = listOf(
-                "NLnet Foundation (NGI0 Entrust / NGI Zero Core - EU Horizon)",
-                "Open Technology Fund (OTF)",
-                "Mozilla Technology Fund & MOSS (Mozilla Open Source Support)",
-                "Sloan Foundation (Data & Computational Research)"
+                "NLnet Foundation (check current calls)",
+                "Open Technology Fund (check current programs)",
+                "Mozilla open-source support programs (check current calls)"
             ),
-            valueProposition = "AstralSync provides open, vendor-neutral astronomical chronometry protocols and open wearable APIs, freeing citizens from closed surveillance ecosystems (Google/Apple/Samsung).",
-            grantSizeRange = "$30,000 – $500,000 (No equity, pure grant)",
+            valueProposition = "The public repository can provide source material for astronomical time calculations and local solar-event visualization. Open-source program eligibility depends on an appropriate software license and each program's current rules.",
+            grantSizeRange = "Depends on the active funding call",
             actionSteps = listOf(
-                "Submit grant applications to NLnet's rolling NGI (Next Generation Internet) funding rounds for open-source digital commons.",
-                "Publish open astronomical algorithms under GPLv3/Apache 2.0 on GitHub (https://github.com/JAPStudios/AstralSync).",
-                "Release open Rust / Kotlin / Python libraries for astronomical time computation."
+                "Check each funder's official call, geographic scope, applicant rules, and deadlines.",
+                "Document the repository's software license, maintenance plan, privacy practices, and security process.",
+                "Keep proposed libraries and integrations distinct from functionality that is already implemented."
             )
         ),
         GrantPillar(
-            category = "3. Community & Transparent Philanthropic Crowdfunding",
+            category = "3. Testing, Accessibility & Release Support",
             targetFunders = listOf(
-                "Open Collective (Tax-deductible public ledger)",
-                "GitHub Sponsors (with matching funds)",
-                "Kickstarter / BackerKit (Community Pre-launch for Wearable AstralSync OS)",
-                "Patreon / Substack Scientific Community"
+                "Android device and platform testing resources",
+                "Accessibility testing communities",
+                "Astronomy and software quality reviewers"
             ),
-            valueProposition = "Direct backing by astronomy enthusiasts, photographers (golden hour seekers), biohackers, shift workers, and circadian health pioneers.",
-            grantSizeRange = "$10,000 – $250,000 / year recurring",
+            valueProposition = "Structured testing can improve device compatibility, accessibility, calculation reliability, and release readiness without assuming a particular legal or tax classification.",
+            grantSizeRange = "Cash or in-kind support; case-specific",
             actionSteps = listOf(
-                "Launch an Open Collective profile connected to the GitHub repository for 100% financial transparency.",
-                "Build tiered community memberships (Astronomer, Chrono-Engineer, Planetary Citizen).",
-                "Offer open-source Astral watch faces for Wear OS, Galaxy Watch, and Pixel Watch as early supporter perks."
+                "Establish repeatable tests across Android versions, screen sizes, and time-zone transitions.",
+                "Review contrast, text scaling, screen-reader labels, and touch-target sizes.",
+                "Verify release signing, backup behavior, permissions, and privacy disclosures before distribution."
             )
         )
     )
@@ -83,39 +79,38 @@ object FundingStrategyData {
         CompetitorDisruption(
             category = "Time & Alarms",
             proprietaryMonopolies = listOf("Google Clock", "Samsung Clock", "Apple Clock"),
-            corporateFlaw = "Hardcoded to arbitrary political time zones drawn for train schedules in 1883; completely disconnected from the sun and planetary rotation.",
-            astralSyncAdvantage = "00:00 begins at true local sunrise; time changes fluidly with coordinates so humans receive 100% full daylight productivity."
+            corporateFlaw = "Civil clocks display local legal time and generally do not make sunrise the basis of the displayed hour.",
+            astralSyncAdvantage = "AstralSync adds a sunrise-referenced clock and estimated solar milestones; it does not replace civil time or a full alarm application."
         ),
         CompetitorDisruption(
             category = "Calendars & Scheduling",
             proprietaryMonopolies = listOf("Google Calendar", "Samsung Calendar", "Microsoft Outlook"),
-            corporateFlaw = "Rigid Gregorian calendar with irregular month lengths (28-31 days) ignoring lunar cycles, planetary seasons, and Earth epoch.",
-            astralSyncAdvantage = "Equi-seasonal 91.3125-day astronomical seasons (Lent, Sem, Autumnus, Winter) and continuous Earth-age tracking since planetary birth."
+            corporateFlaw = "General-purpose calendars prioritize civil dates and scheduling rather than a custom solar-based date sequence.",
+            astralSyncAdvantage = "AstralSync includes a custom twelve-month sequence and equal-duration season model alongside Gregorian date conversion."
         ),
         CompetitorDisruption(
             category = "Sleep & Circadian Tracking",
-            proprietaryMonopolies = listOf("Sleep Cycle", "Fitbit", "Pokémon Sleep", "Samsung Health", "Apple Sleep"),
-            corporateFlaw = "Gamified or paywalled sleep metrics that track sleep after the fact without synchronizing morning light exposure to real horizon dawn.",
-            astralSyncAdvantage = "Astronomical milestone guidance: automated alerts for morning golden hour photon intake and night start astronomical twilight wind-down."
+            proprietaryMonopolies = listOf("Sleep Cycle", "Fitbit", "Samsung Health", "Apple Sleep"),
+            corporateFlaw = "Sleep products estimate sleep-related metrics using their own sensors and algorithms; those measurements are outside this app's current scope.",
+            astralSyncAdvantage = "AstralSync supplies solar-time context only. It does not measure sleep, diagnose circadian disorders, or provide clinical telemetry."
         ),
         CompetitorDisruption(
-            category = "Mindfulness & Vitality",
+            category = "Mindfulness & Wellness",
             proprietaryMonopolies = listOf("Headspace", "Noom", "Google Fit"),
-            corporateFlaw = "Expensive subscriptions ($70-$150/yr) pushing artificial meditation routines disconnected from cosmic solar energy and seasonal biological needs.",
-            astralSyncAdvantage = "Free, non-profit public utility aligned with nature, solar elevation azimuth, and mythological archetype grounding."
+            corporateFlaw = "These products provide separate wellness and activity features that are not part of astronomical timekeeping.",
+            astralSyncAdvantage = "AstralSync focuses on local solar calculations and does not claim to replace meditation, nutrition, or fitness services."
         ),
         CompetitorDisruption(
-            category = "Compass & Wearable Sensors",
-            proprietaryMonopolies = listOf("Samsung Compass", "Galaxy Watch", "Apple Watch", "Pixel Watch", "Forecast"),
-            corporateFlaw = "Siloed proprietary hardware trapping health metrics into proprietary advertising clouds.",
-            astralSyncAdvantage = "Open standard chronometer combining real-time magnetic heading, live solar azimuth, and true astronomical horizon angles."
+            category = "Compass & Solar Direction",
+            proprietaryMonopolies = listOf("Phone magnetic compass applications", "Wearable compass applications"),
+            corporateFlaw = "Magnetic compasses measure magnetic-field direction and may require calibration; solar azimuth is a different quantity.",
+            astralSyncAdvantage = "AstralSync calculates solar azimuth from location and time. It does not measure magnetic heading or provide certified navigation."
         )
     )
 
-    val LEGAL_FRAMEWORK = LegalPrecedent(
-        caseName = "Melzer et al. v. Johnson & Johnson Consumer Inc.",
-        citation = "Case No. 3:22-cv-03149 (U.S. District Court for the District of New Jersey)",
-        keyPrinciple = "Consumer protection action regarding deceptive labeling, unverified wellness claims, and scientific accuracy in corporate health representations.",
-        applicationToAstralSync = "AstralSync establishes absolute scientific accuracy by grounding its clock in verifiable NOAA astronomical algorithms, planetary physics, and published chronobiology rather than proprietary marketing metrics. As a 501(c)(3) not-for-profit, AstralSync eliminates profit-driven manipulation, positioning itself as the trusted, objective public standard for truthful timekeeping."
+    val SCOPE_NOTE = ScopeNote(
+        citation = "AstralSync calculation and feature scope",
+        keyPrinciple = "Solar-event and solar-position values are estimates based on NOAA-style equations. Accuracy depends on the model assumptions, coordinates, date, and time-zone data.",
+        applicationToAstralSync = "The application does not measure personal light exposure, sleep, melatonin, or circadian phase. It does not diagnose or treat a medical condition and its solar azimuth is not a magnetic compass or navigation instrument. Funding eligibility is program-specific and must be checked against each current official notice."
     )
 }

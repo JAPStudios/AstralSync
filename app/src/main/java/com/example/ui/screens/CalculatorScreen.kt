@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.TimeZone
+import com.example.data.AstralCalendarEngine
 import com.example.data.LocationCoordinate
 import com.example.data.LocationPresets
 import com.example.ui.AstralUiState
@@ -35,14 +37,34 @@ fun CalculatorScreen(
     var dayText by remember(state.calcDay) { mutableStateOf(state.calcDay.toString()) }
     var hourText by remember(state.calcHour) { mutableStateOf(state.calcHour.toString()) }
     var minuteText by remember(state.calcMinute) { mutableStateOf(state.calcMinute.toString()) }
+    var inputError by remember { mutableStateOf<String?>(null) }
 
     fun triggerCalc() {
-        val y = yearText.toIntOrNull() ?: 2004
-        val m = (monthText.toIntOrNull() ?: 1).coerceIn(1, 12)
-        val d = (dayText.toIntOrNull() ?: 1).coerceIn(1, 31)
-        val h = (hourText.toIntOrNull() ?: 0).coerceIn(0, 23)
-        val min = (minuteText.toIntOrNull() ?: 0).coerceIn(0, 59)
-        onCalculate(y, m, d, h, min, null)
+        val y = yearText.toIntOrNull()
+        val m = monthText.toIntOrNull()
+        val d = dayText.toIntOrNull()
+        val h = hourText.toIntOrNull()
+        val min = minuteText.toIntOrNull()
+
+        inputError = when {
+            y == null || y !in 1..9999 -> "Enter a year from 1 through 9999."
+            m == null || m !in 1..12 -> "Enter a month from 1 through 12."
+            d == null || !AstralCalendarEngine.isValidGregorianDate(y, m, d) ->
+                "Enter a valid day for the selected month and year."
+            h == null || h !in 0..23 -> "Enter an hour from 0 through 23."
+            min == null || min !in 0..59 -> "Enter a minute from 0 through 59."
+            !AstralCalendarEngine.isValidLocalDateTime(
+                y!!, m!!, d!!, h!!, min!!, TimeZone.getTimeZone(state.calcLocation.timeZoneId)
+            ) -> "That local time does not exist because of a time-zone clock change."
+            else -> null
+        }
+        if (inputError != null) return
+        onCalculate(y!!, m!!, d!!, h!!, min!!, null)
+    }
+
+    fun loadPreset(year: Int, month: Int, day: Int, hour: Int, minute: Int, location: LocationCoordinate) {
+        inputError = null
+        onLoadPreset(year, month, day, hour, minute, location)
     }
 
     LazyColumn(
@@ -79,7 +101,7 @@ fun CalculatorScreen(
                             title = "Sept 2, 2004 02:18 (New York)",
                             subtitle = "Calculates Earth Age, Month 8 / October, Day 17, Mayan Sign Earth (Kab'an)",
                             onClick = {
-                                onLoadPreset(2004, 9, 2, 2, 18, LocationPresets.WINDHAM_NY)
+                                loadPreset(2004, 9, 2, 2, 18, LocationPresets.WINDHAM_NY)
                             },
                             tag = "preset_sept_2_2004"
                         )
@@ -87,7 +109,7 @@ fun CalculatorScreen(
                             title = "Oct 25, 2007 00:10 (Albany Med, NY)",
                             subtitle = "Albany Med birth conversion in the New System",
                             onClick = {
-                                onLoadPreset(2007, 10, 25, 0, 10, LocationPresets.ALBANY_NY)
+                                loadPreset(2007, 10, 25, 0, 10, LocationPresets.ALBANY_NY)
                             },
                             tag = "preset_oct_25_2007"
                         )
@@ -95,7 +117,7 @@ fun CalculatorScreen(
                             title = "April 25, 2023 19:49 (Windham, NY)",
                             subtitle = "Sunrise 06:00 -> 00:00, Sunset 19:49 -> 13:49 Astral Time",
                             onClick = {
-                                onLoadPreset(2023, 4, 25, 19, 49, LocationPresets.WINDHAM_NY)
+                                loadPreset(2023, 4, 25, 19, 49, LocationPresets.WINDHAM_NY)
                             },
                             tag = "preset_april_25_2023"
                         )
@@ -176,6 +198,15 @@ fun CalculatorScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    inputError?.let { message ->
+                        Text(
+                            text = message,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.testTag("calc_input_error")
+                        )
+                    }
+
                     Button(
                         onClick = { triggerCalc() },
                         colors = ButtonDefaults.buttonColors(containerColor = SolarGold, contentColor = CosmicBackground),
@@ -190,7 +221,7 @@ fun CalculatorScreen(
         }
 
         // Calculation Results Display
-        state.calcResult?.let { result ->
+        state.calcResult?.takeIf { inputError == null }?.let { result ->
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = CosmicSurface),

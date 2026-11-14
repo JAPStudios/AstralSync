@@ -43,6 +43,7 @@ class ExampleUnitTest {
             milestones = milestones
         )
 
+        assertEquals("Sunrise", astralAtRise.timeAnchorLabel)
         assertEquals("Hour at sunrise must be 0", 0, astralAtRise.hours)
         assertEquals("Minute at sunrise must be 0", 0, astralAtRise.minutes)
         assertEquals("Second at sunrise must be 0", 0, astralAtRise.seconds)
@@ -105,6 +106,52 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testLocalDateTimeValidationRejectsSpringForwardGap() {
+        val newYork = TimeZone.getTimeZone("America/New_York")
+        assertFalse(AstralCalendarEngine.isValidLocalDateTime(2024, 3, 10, 2, 30, newYork))
+        assertTrue(AstralCalendarEngine.isValidLocalDateTime(2024, 3, 10, 3, 30, newYork))
+        assertTrue(AstralCalendarEngine.isValidLocalDateTime(2024, 11, 3, 1, 30, newYork))
+    }
+
+    @Test
+    fun testAstralDateUsesTheSelectedLocalCalendarDate() {
+        val instant = java.time.Instant.parse("2024-01-01T04:30:00Z").toEpochMilli()
+        val utcDate = AstralCalendarEngine.calculateAstralDate(instant)
+        val newYorkDate = AstralCalendarEngine.calculateAstralDate(
+            timestampMillis = instant,
+            timeZone = TimeZone.getTimeZone("America/New_York")
+        )
+
+        assertEquals("April", utcDate.monthName)
+        assertEquals("January", newYorkDate.monthName)
+        assertEquals(12, newYorkDate.monthOrder)
+    }
+
+    @Test
+    fun testMayanTwentyDayNameCycleAdvancesAcrossLeapDay() {
+        fun result(date: String) = AstralCalendarEngine.calculateAstralDate(
+            java.time.Instant.parse(date).toEpochMilli()
+        )
+        val feb28 = result("2024-02-28T12:00:00Z")
+        val feb29 = result("2024-02-29T12:00:00Z")
+        val mar01 = result("2024-03-01T12:00:00Z")
+        val names = AstralCalendarEngine.MAYAN_DAY_NAMES
+        assertEquals((names.indexOf(feb28.mayanSign) + 1) % 20, names.indexOf(feb29.mayanSign))
+        assertEquals((names.indexOf(feb29.mayanSign) + 1) % 20, names.indexOf(mar01.mayanSign))
+    }
+
+    @Test
+    fun testGregorianDateValidationRejectsInvalidMonthLengths() {
+        assertTrue(AstralCalendarEngine.isValidGregorianDate(2024, 2, 29))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(2023, 2, 29))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(2024, 4, 31))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(2024, 13, 1))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(0, 1, 1))
+        assertTrue(AstralCalendarEngine.isValidGregorianDate(2000, 2, 29))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(1900, 2, 29))
+    }
+
+    @Test
     fun testCalendarHandlesLeapDayAndYearEndWithinTwelveMonthSequence() {
         val utc = TimeZone.getTimeZone("UTC")
         val leapDay = java.util.Calendar.getInstance(utc).apply {
@@ -163,6 +210,113 @@ class ExampleUnitTest {
         assertEquals("000", result.picoseconds)
         assertEquals("000", result.femtoseconds)
         assertEquals("000", result.attoseconds)
+    }
+
+    @Test
+    fun testPolarDayDoesNotInventSunriseOrSunset() {
+        val date = java.time.Instant.parse("2024-06-21T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 78.2232,
+            longitude = 15.6469,
+            timestampMillis = date,
+            timeZone = TimeZone.getTimeZone("Arctic/Longyearbyen")
+        )
+
+        assertEquals(AstralCalculator.SolarDayCondition.POLAR_DAY, milestones.solarDayCondition)
+        assertEquals(AstralCalculator.AstronomicalNightCondition.DOES_NOT_OCCUR, milestones.astronomicalNightCondition)
+        assertFalse(milestones.sunriseOccurs)
+        assertFalse(milestones.sunsetOccurs)
+        val time = AstralCalculator.computeAstralTime(date, 0L, milestones)
+        assertEquals("Solar noon", time.timeAnchorLabel)
+        assertEquals("Continuous Daylight (Midnight Sun)", time.currentMilestone)
+        assertEquals("Sunset does not occur", time.nextMilestone)
+    }
+
+    @Test
+    fun testPolarNightDoesNotInventSunriseOrSunset() {
+        val date = java.time.Instant.parse("2024-12-21T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 78.2232,
+            longitude = 15.6469,
+            timestampMillis = date,
+            timeZone = TimeZone.getTimeZone("Arctic/Longyearbyen")
+        )
+
+        assertEquals(AstralCalculator.SolarDayCondition.POLAR_NIGHT, milestones.solarDayCondition)
+        assertFalse(milestones.sunriseOccurs)
+        assertFalse(milestones.sunsetOccurs)
+        val time = AstralCalculator.computeAstralTime(date, 0L, milestones)
+        assertEquals("Continuous Polar Night", time.currentMilestone)
+        assertEquals("Sunrise does not occur", time.nextMilestone)
+    }
+
+    @Test
+    fun testAstronomicalNightCanPersistAllDayAtExtremeLatitude() {
+        val date = java.time.Instant.parse("2024-12-21T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 89.5,
+            longitude = 0.0,
+            timestampMillis = date,
+            timeZone = TimeZone.getTimeZone("UTC")
+        )
+
+        assertEquals(AstralCalculator.SolarDayCondition.POLAR_NIGHT, milestones.solarDayCondition)
+        assertEquals(AstralCalculator.AstronomicalNightCondition.ALL_DAY, milestones.astronomicalNightCondition)
+    }
+
+    @Test
+    fun testSolarPositionAtEquinoxNoonPointsSouth() {
+        val date = java.time.Instant.parse("2024-03-20T12:00:00Z").toEpochMilli()
+        val position = AstralCalculator.computeSolarPosition(40.0, 0.0, date)
+
+        assertTrue("Equinox noon elevation should be near 50 degrees", position.elevationDeg in 49.0..51.0)
+        assertTrue("The Sun should be near due south at northern-hemisphere solar noon", position.azimuthDeg in 170.0..190.0)
+    }
+
+    @Test
+    fun testCalculatedSunriseAndSunsetAreNearHorizon() {
+        val timeZone = TimeZone.getTimeZone("UTC")
+        val date = java.time.Instant.parse("2024-03-20T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(40.0, 0.0, date, timeZone)
+        val sunrise = AstralCalculator.computeSolarPosition(40.0, 0.0, milestones.sunriseStartMillis)
+        val sunset = AstralCalculator.computeSolarPosition(40.0, 0.0, milestones.sunsetEndMillis)
+
+        assertTrue("Calculated sunrise should be close to the horizon", kotlin.math.abs(sunrise.elevationDeg) < 1.2)
+        assertTrue("Calculated sunset should be close to the horizon", kotlin.math.abs(sunset.elevationDeg) < 1.2)
+        assertTrue("Sunrise should be in the eastern sky", sunrise.azimuthDeg in 80.0..100.0)
+        assertTrue("Sunset should be in the western sky", sunset.azimuthDeg in 260.0..280.0)
+    }
+
+    @Test
+    fun testSolarNoonUsesDaylightOffsetOnSpringForwardDate() {
+        val timeZone = TimeZone.getTimeZone("America/New_York")
+        val date = java.time.Instant.parse("2024-03-10T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 42.345996,
+            longitude = -74.246748,
+            timestampMillis = date,
+            timeZone = timeZone
+        )
+        val localNoon = java.util.Calendar.getInstance(timeZone).apply {
+            timeInMillis = milestones.solarNoonMillis
+        }
+        assertEquals(13, localNoon.get(java.util.Calendar.HOUR_OF_DAY))
+    }
+
+    @Test
+    fun testSolarNoonUsesStandardOffsetOnFallBackDate() {
+        val timeZone = TimeZone.getTimeZone("America/New_York")
+        val date = java.time.Instant.parse("2024-11-03T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 42.345996,
+            longitude = -74.246748,
+            timestampMillis = date,
+            timeZone = timeZone
+        )
+        val localNoon = java.util.Calendar.getInstance(timeZone).apply {
+            timeInMillis = milestones.solarNoonMillis
+        }
+        assertEquals(11, localNoon.get(java.util.Calendar.HOUR_OF_DAY))
     }
 
     @Test
