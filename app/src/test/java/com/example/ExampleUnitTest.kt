@@ -106,6 +106,20 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testAstralDateUsesTheSelectedLocalCalendarDate() {
+        val instant = java.time.Instant.parse("2024-01-01T04:30:00Z").toEpochMilli()
+        val utcDate = AstralCalendarEngine.calculateAstralDate(instant)
+        val newYorkDate = AstralCalendarEngine.calculateAstralDate(
+            timestampMillis = instant,
+            timeZone = TimeZone.getTimeZone("America/New_York")
+        )
+
+        assertEquals("April", utcDate.monthName)
+        assertEquals("January", newYorkDate.monthName)
+        assertEquals(12, newYorkDate.monthOrder)
+    }
+
+    @Test
     fun testMayanTwentyDayNameCycleAdvancesAcrossLeapDay() {
         fun result(date: String) = AstralCalendarEngine.calculateAstralDate(
             java.time.Instant.parse(date).toEpochMilli()
