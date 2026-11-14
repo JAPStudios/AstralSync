@@ -68,7 +68,7 @@ fun FundingStrategyScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Big Tech monopolies (Google Clock, Samsung Clock/Health, Apple Watch, Microsoft Calendar, Fitbit, Headspace, Noom, Pokémon Sleep) profit from proprietary walled gardens and arbitrary 19th-century railway time zones. AstralSync can secure public-interest capital as a scientific, open-source 501(c)(3) standard for circadian health and astronomical accuracy.",
+                        text = "AstralSync is an Android application for sunrise-referenced timekeeping, solar-event estimates, and a custom calendar sequence. Potential support routes depend on independent validation, the active funding call, and its applicant requirements.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
@@ -86,7 +86,7 @@ fun FundingStrategyScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Official AstralSync Repositories & Documents",
+                        text = "AstralSync Project Source",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                         color = TextPrimary
                     )
@@ -97,17 +97,11 @@ fun FundingStrategyScreen(
                         url = "https://github.com/JAPStudios/AstralSync",
                         tag = "link_github"
                     )
-                    ExternalLinkRow(
-                        title = "Google Docs - Legal & Funding Requirements",
-                        subtitle = "Non-profit bylaws, budget allocations, and patent filings",
-                        url = "https://docs.google.com",
-                        tag = "link_docs"
-                    )
                 }
             }
         }
 
-        // Legal Precedent Analysis: Melzer v. Johnson & Johnson
+        // Scientific and feature scope
         item {
             Card(
                 colors = CardDefaults.cardColors(containerColor = CosmicSurface),
@@ -122,14 +116,14 @@ fun FundingStrategyScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Legal Precedent: Melzer v. J&J",
+                            text = "Scientific and Feature Scope",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = CelestialCyan
                         )
                         Icon(Icons.Default.Gavel, contentDescription = null, tint = CelestialCyan, modifier = Modifier.size(20.dp))
                     }
                     Text(
-                        text = FundingStrategyData.LEGAL_FRAMEWORK.citation,
+                        text = FundingStrategyData.SCOPE_NOTE.citation,
                         style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
                         color = TextMuted
                     )
@@ -137,12 +131,12 @@ fun FundingStrategyScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Core Legal Principle:",
+                        text = "Calculation Scope:",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = SolarGoldLight
                     )
                     Text(
-                        text = FundingStrategyData.LEGAL_FRAMEWORK.keyPrinciple,
+                        text = FundingStrategyData.SCOPE_NOTE.keyPrinciple,
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
@@ -150,12 +144,12 @@ fun FundingStrategyScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Strategic Application to AstralSync:",
+                        text = "Feature Boundaries:",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = AuroraGreen
                     )
                     Text(
-                        text = FundingStrategyData.LEGAL_FRAMEWORK.applicationToAstralSync,
+                        text = FundingStrategyData.SCOPE_NOTE.applicationToAstralSync,
                         style = MaterialTheme.typography.bodySmall,
                         color = TextPrimary
                     )
@@ -166,7 +160,7 @@ fun FundingStrategyScreen(
         // The 3 Grant Funding Pillars
         item {
             Text(
-                text = "Three Actionable Capital Avenues ($500K - $3M+)",
+                text = "Potential Funding and Support Pathways",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = TextPrimary
             )
