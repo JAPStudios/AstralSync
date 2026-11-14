@@ -200,7 +200,8 @@ object AstralCalendarEngine {
     }
 
     /**
-     * Convert elapsed seconds into progressively smaller mathematical time scales.\n     * Values below nanoseconds are scale conversions, not direct physical measurements.
+     * Convert elapsed seconds into progressively smaller mathematical time scales.
+     * Values below nanoseconds are scale conversions, not direct physical measurements.
      */
     @Suppress("UNUSED_PARAMETER")
     fun computeQuantumChronometry(elapsedSeconds: Double, currentNanos: Long): QuantumChronometry {
