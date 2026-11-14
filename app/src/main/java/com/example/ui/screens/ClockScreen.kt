@@ -150,7 +150,11 @@ fun ClockScreen(
                         ) {
                             Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(SolarGold))
                             Text(
-                                text = "TRUE ASTRONOMICAL TIME",
+                                text = if (state.milestones.sunriseOccurs) {
+                                    "TRUE ASTRONOMICAL TIME"
+                                } else {
+                                    "SOLAR-NOON-ANCHORED ASTRAL TIME"
+                                },
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
                                 color = SolarGoldLight
                             )
@@ -216,7 +220,11 @@ fun ClockScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "Sunrise 00:00 ($sunriseStr)",
+                                text = if (state.milestones.sunriseOccurs) {
+                                    "Sunrise 00:00 ($sunriseStr)"
+                                } else {
+                                    "Solar noon 00:00 (anchor)"
+                                },
                                 style = MaterialTheme.typography.labelSmall,
                                 color = SolarHorizon
                             )
@@ -226,7 +234,7 @@ fun ClockScreen(
                                 color = SolarGold
                             )
                             Text(
-                                text = "24:00 Next Rise",
+                                text = if (state.milestones.sunriseOccurs) "24:00 Next Rise" else "No sunrise today",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = TextMuted
                             )
