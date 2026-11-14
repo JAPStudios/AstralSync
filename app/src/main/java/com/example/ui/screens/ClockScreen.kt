@@ -47,8 +47,16 @@ fun ClockScreen(
 
     val sunriseTimeFmt = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     sunriseTimeFmt.timeZone = TimeZone.getTimeZone(state.currentCoordinate.timeZoneId)
-    val sunriseStr = sunriseTimeFmt.format(Date(state.milestones.sunriseStartMillis))
-    val sunsetStr = sunriseTimeFmt.format(Date(state.milestones.sunsetEndMillis))
+    val sunriseStr = if (state.milestones.sunriseOccurs) {
+        sunriseTimeFmt.format(Date(state.milestones.sunriseStartMillis))
+    } else {
+        "Does not occur"
+    }
+    val sunsetStr = if (state.milestones.sunsetOccurs) {
+        sunriseTimeFmt.format(Date(state.milestones.sunsetEndMillis))
+    } else {
+        "Does not occur"
+    }
 
     LazyColumn(
         modifier = modifier
@@ -351,60 +359,80 @@ fun ClockScreen(
                 val tz = TimeZone.getTimeZone(state.currentCoordinate.timeZoneId)
                 val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).apply { timeZone = tz }
 
+                val sunriseAvailable = state.milestones.sunriseOccurs
+                val sunsetAvailable = state.milestones.sunsetOccurs
+                val morningGoldenHourAvailable = state.milestones.morningGoldenHourOccurs
+                val eveningGoldenHourAvailable = state.milestones.eveningGoldenHourOccurs
+                val sunriseAnchor = state.milestones.sunriseStartMillis
+                fun localTime(occurs: Boolean, millis: Long): String =
+                    if (occurs) timeFmt.format(Date(millis)) else "Does not occur"
+                fun astralTime(occurs: Boolean, millis: Long): String =
+                    if (occurs && sunriseAvailable) computeRelativeAstral(millis, sunriseAnchor) else "—"
+
                 MilestoneCard(
                     title = "1. Sunrise Starts (00:00:00 Astral)",
                     desc = "Top edge of sun appears on horizon (Zenith 90.833°)",
-                    standardTime = timeFmt.format(Date(state.milestones.sunriseStartMillis)),
-                    astralTime = "00:00:00",
+                    standardTime = localTime(sunriseAvailable, state.milestones.sunriseStartMillis),
+                    astralTime = if (sunriseAvailable) "00:00:00" else "—",
                     accentColor = SolarGold
                 )
                 MilestoneCard(
                     title = "2. Sunrise Ends (Full Disk)",
                     desc = "Bottom edge of sun touches horizon, full disk visible",
-                    standardTime = timeFmt.format(Date(state.milestones.sunriseEndMillis)),
-                    astralTime = computeRelativeAstral(state.milestones.sunriseEndMillis, state.milestones.sunriseStartMillis),
+                    standardTime = localTime(sunriseAvailable, state.milestones.sunriseEndMillis),
+                    astralTime = astralTime(sunriseAvailable, state.milestones.sunriseEndMillis),
                     accentColor = SolarGoldLight
                 )
                 MilestoneCard(
                     title = "3. Morning Golden Hour Ends",
                     desc = "Sun reaches 6° elevation; optimal soft light photography",
-                    standardTime = timeFmt.format(Date(state.milestones.goldenHourMorningEnd)),
-                    astralTime = computeRelativeAstral(state.milestones.goldenHourMorningEnd, state.milestones.sunriseStartMillis),
+                    standardTime = localTime(morningGoldenHourAvailable, state.milestones.goldenHourMorningEnd),
+                    astralTime = astralTime(morningGoldenHourAvailable, state.milestones.goldenHourMorningEnd),
                     accentColor = SolarAmber
                 )
                 MilestoneCard(
                     title = "4. Solar Noon (Highest Position)",
-                    desc = "Sun at maximum altitude / zenith across local meridian",
+                    desc = "Sun at maximum altitude across the local meridian",
                     standardTime = timeFmt.format(Date(state.milestones.solarNoonMillis)),
-                    astralTime = computeRelativeAstral(state.milestones.solarNoonMillis, state.milestones.sunriseStartMillis),
+                    astralTime = astralTime(sunriseAvailable, state.milestones.solarNoonMillis),
                     accentColor = SolarGold
                 )
                 MilestoneCard(
                     title = "5. Evening Golden Hour Starts",
                     desc = "Sun descends through 6° elevation, warm golden lighting",
-                    standardTime = timeFmt.format(Date(state.milestones.goldenHourEveningStart)),
-                    astralTime = computeRelativeAstral(state.milestones.goldenHourEveningStart, state.milestones.sunriseStartMillis),
+                    standardTime = localTime(eveningGoldenHourAvailable, state.milestones.goldenHourEveningStart),
+                    astralTime = astralTime(eveningGoldenHourAvailable, state.milestones.goldenHourEveningStart),
                     accentColor = SolarAmber
                 )
                 MilestoneCard(
                     title = "6. Sunset Starts (Horizon Touch)",
                     desc = "Bottom edge of sun touches western horizon",
-                    standardTime = timeFmt.format(Date(state.milestones.sunsetStartMillis)),
-                    astralTime = computeRelativeAstral(state.milestones.sunsetStartMillis, state.milestones.sunriseStartMillis),
+                    standardTime = localTime(sunsetAvailable, state.milestones.sunsetStartMillis),
+                    astralTime = astralTime(sunsetAvailable, state.milestones.sunsetStartMillis),
                     accentColor = SolarHorizon
                 )
                 MilestoneCard(
                     title = "7. Sunset Ends (Disappeared)",
                     desc = "Top edge disappears below horizon, dusk begins",
-                    standardTime = timeFmt.format(Date(state.milestones.sunsetEndMillis)),
-                    astralTime = computeRelativeAstral(state.milestones.sunsetEndMillis, state.milestones.sunriseStartMillis),
+                    standardTime = localTime(sunsetAvailable, state.milestones.sunsetEndMillis),
+                    astralTime = astralTime(sunsetAvailable, state.milestones.sunsetEndMillis),
                     accentColor = SolarHorizon
                 )
+                val nightStatus = when (state.milestones.astronomicalNightCondition) {
+                    AstralCalculator.AstronomicalNightCondition.STARTS -> localTime(true, state.milestones.nightStartMillis)
+                    AstralCalculator.AstronomicalNightCondition.ALL_DAY -> "All day"
+                    AstralCalculator.AstronomicalNightCondition.DOES_NOT_OCCUR -> "Does not occur"
+                }
+                val nightAstral = when (state.milestones.astronomicalNightCondition) {
+                    AstralCalculator.AstronomicalNightCondition.STARTS -> astralTime(sunriseAvailable, state.milestones.nightStartMillis)
+                    AstralCalculator.AstronomicalNightCondition.ALL_DAY -> "All day"
+                    AstralCalculator.AstronomicalNightCondition.DOES_NOT_OCCUR -> "—"
+                }
                 MilestoneCard(
                     title = "8. Night Starts (Astronomical Twilight)",
-                    desc = "Sun 18° below horizon; dark enough for astronomical telescope observations",
-                    standardTime = timeFmt.format(Date(state.milestones.nightStartMillis)),
-                    astralTime = computeRelativeAstral(state.milestones.nightStartMillis, state.milestones.sunriseStartMillis),
+                    desc = "Sun reaches 18° below the horizon",
+                    standardTime = nightStatus,
+                    astralTime = nightAstral,
                     accentColor = CelestialCyan
                 )
             }
