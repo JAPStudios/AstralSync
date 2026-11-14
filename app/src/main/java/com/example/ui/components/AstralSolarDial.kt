@@ -65,7 +65,13 @@ fun AstralSolarDial(
             // 00:00 (Sunrise) is at 180 degrees (Left Horizon)
             // Solar noon is at 270 degrees (Top Zenith)
             // Sunset is at ~0 degrees (Right Horizon)
-            val dayFraction = ((milestones.sunsetEndMillis - milestones.sunriseStartMillis).toDouble() / (24.0 * 3600000.0)).toFloat().coerceIn(0.2f, 0.8f)
+            val dayFraction = when (milestones.solarDayCondition) {
+                AstralCalculator.SolarDayCondition.POLAR_DAY -> 1f
+                AstralCalculator.SolarDayCondition.POLAR_NIGHT -> 0f
+                AstralCalculator.SolarDayCondition.NORMAL ->
+                    ((milestones.sunsetEndMillis - milestones.sunriseStartMillis).toDouble() /
+                        (24.0 * 3600000.0)).toFloat().coerceIn(0f, 1f)
+            }
             val daySweepAngle = dayFraction * 360f
 
             drawArc(
@@ -199,7 +205,11 @@ fun AstralSolarDial(
                 color = SolarGoldLight
             )
             Text(
-                text = "ASTRAL TIME (00:00 = SUNRISE)",
+                text = when (milestones.solarDayCondition) {
+                    AstralCalculator.SolarDayCondition.NORMAL -> "ASTRAL TIME (00:00 = SUNRISE)"
+                    AstralCalculator.SolarDayCondition.POLAR_DAY -> "ASTRAL TIME (NO SUNRISE; NOON ANCHOR)"
+                    AstralCalculator.SolarDayCondition.POLAR_NIGHT -> "ASTRAL TIME (NO SUNRISE; NOON ANCHOR)"
+                },
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 9.sp,
                     fontWeight = FontWeight.SemiBold,
