@@ -185,13 +185,13 @@ fun CircadianHealthScreen(
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Icon(Icons.Default.Explore, contentDescription = null, tint = CelestialCyan, modifier = Modifier.size(20.dp))
                             Text(
-                                text = "Astronomical Solar Compass",
+                                text = "Solar Direction",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                 color = TextPrimary
                             )
                         }
                         Text(
-                            text = "True Solar North",
+                            text = "Solar Azimuth",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextMuted
                         )
