@@ -26,7 +26,7 @@ The project retains its AI Studio release and debug signing configurations. The 
 
 ## Location
 
-The application can calculate solar data for its bundled location presets. Device location is optional and is requested only when the location action is selected. Grant either fine or coarse location permission to use the device's last known location.
+The application can calculate solar data for its bundled location presets. Device location is optional and is requested only when the location action is selected. It requests a balanced-accuracy current fix and falls back to the last known location. Grant either fine or coarse location permission to use this feature.
 
 ## Calculation notes
 
