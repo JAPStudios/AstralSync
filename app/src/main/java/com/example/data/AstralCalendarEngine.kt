@@ -107,7 +107,7 @@ object AstralCalendarEngine {
         val zeptoseconds: String,
         val yoctoseconds: String,
         val planckTimes: String,
-        val activeBiologicalTrigger: String?
+        val activeTimingReference: String?
     )
 
     /**
@@ -237,18 +237,17 @@ object AstralCalendarEngine {
         val fractionalSeconds = elapsed.remainder(BigDecimal.ONE)
         val totalMicros = (elapsedSeconds * 1_000_000.0).toLong()
 
-        // Trigger windows are centered on each period boundary, rather than only
-        // recognizing the interval after a boundary.
+        // Timing-reference windows are centered on each period boundary.
         fun nearPeriodBoundary(periodMicros: Long, toleranceMicros: Long): Boolean {
             val phase = Math.floorMod(totalMicros, periodMicros)
             return minOf(phase, periodMicros - phase) <= toleranceMicros
         }
 
-        val trigger = when {
-            nearPeriodBoundary(350_000L, 5_000L) -> "👁️ Eye Blink Quantum Window (~350,000 µs)"
-            nearPeriodBoundary(150_000L, 5_000L) -> "🫰 Finger Snap Quantum Window (~150,000 µs)"
-            nearPeriodBoundary(4_000L, 500L) -> "📸 Camera Shutter Open (~4,000 µs)"
-            nearPeriodBoundary(1_000L, 200L) -> "⚡ Camera Flash Pulse (~1,000 µs)"
+        val timingReference = when {
+            nearPeriodBoundary(350_000L, 5_000L) -> "350 ms reference interval"
+            nearPeriodBoundary(150_000L, 5_000L) -> "150 ms reference interval"
+            nearPeriodBoundary(4_000L, 500L) -> "4 ms exposure reference interval"
+            nearPeriodBoundary(1_000L, 200L) -> "1 ms flash reference interval"
             else -> null
         }
 
@@ -276,7 +275,7 @@ object AstralCalendarEngine {
             zeptoseconds = zeptoExp,
             yoctoseconds = yoctoExp,
             planckTimes = planckExp,
-            activeBiologicalTrigger = trigger
+            activeTimingReference = timingReference
         )
     }
 }
