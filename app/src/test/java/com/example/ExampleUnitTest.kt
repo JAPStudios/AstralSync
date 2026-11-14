@@ -124,6 +124,37 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testLeapYearEndRemainsAtEndOfTwelfthAstralMonth() {
+        val utc = TimeZone.getTimeZone("UTC")
+        val yearEnd = java.util.Calendar.getInstance(utc).apply {
+            clear()
+            set(2024, java.util.Calendar.DECEMBER, 31, 23, 59, 59)
+        }.timeInMillis
+
+        val result = AstralCalendarEngine.calculateAstralDate(yearEnd)
+
+        assertEquals("January must remain the twelfth month at year end", "January", result.monthName)
+        assertEquals(12, result.monthOrder)
+        assertTrue("Final Astral month must be near its end", result.dayInMonth > 30.4)
+        assertTrue("Year progress must remain below 100% before midnight", result.yearProgressPercent < 1f)
+    }
+
+    @Test
+    fun testCommonYearEndRemainsAtEndOfTwelfthAstralMonth() {
+        val utc = TimeZone.getTimeZone("UTC")
+        val yearEnd = java.util.Calendar.getInstance(utc).apply {
+            clear()
+            set(2023, java.util.Calendar.DECEMBER, 31, 23, 59, 59)
+        }.timeInMillis
+
+        val result = AstralCalendarEngine.calculateAstralDate(yearEnd)
+
+        assertEquals("January must remain the twelfth month at year end", "January", result.monthName)
+        assertEquals(12, result.monthOrder)
+        assertTrue("Final Astral month must be near its end", result.dayInMonth > 30.4)
+    }
+
+    @Test
     fun testQuantumChronometryUsesNonOverflowingFractionalConversions() {
         val result = AstralCalendarEngine.computeQuantumChronometry(12.345678901, 987654321L)
         assertEquals(345L, result.milliseconds)

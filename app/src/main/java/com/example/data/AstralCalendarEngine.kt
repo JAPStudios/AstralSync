@@ -117,14 +117,18 @@ object AstralCalendarEngine {
         val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = timestampMillis }
         val gYear = cal.get(Calendar.YEAR)
         val dayOfYear = cal.get(Calendar.DAY_OF_YEAR)
+        val daysInGregorianYear = cal.getActualMaximum(Calendar.DAY_OF_YEAR)
         val hourOfDay = cal.get(Calendar.HOUR_OF_DAY)
         val minute = cal.get(Calendar.MINUTE)
         val second = cal.get(Calendar.SECOND)
 
         val fractionalDay = (hourOfDay * 3600.0 + minute * 60.0 + second) / 86400.0
-        val totalDaysInYear = (dayOfYear - 1) + fractionalDay
+        val elapsedGregorianDays = (dayOfYear - 1) + fractionalDay
 
-        // Year length = 365.25 days
+        // Map each Gregorian year onto the Astral calendar's fixed 365.25-day year.
+        // This prevents leap years from overflowing the twelve 30.4375-day months.
+        val totalDaysInYear = elapsedGregorianDays * (365.25 / daysInGregorianYear)
+
         val yearProgress = (totalDaysInYear / 365.25).toFloat().coerceIn(0f, 1f)
 
         // Earth Age: ~4.54 billion years + Gregorian offset
