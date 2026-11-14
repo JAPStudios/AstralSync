@@ -1,22 +1,26 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# AstralSync
 
-# Run and deploy your AI Studio app
+AstralSync is an Android astronomical timekeeping application. It provides a sunrise-referenced chronometer, calculated solar milestones and solar position, an Astral calendar, a date converter, circadian information screens, and a funding-strategy reference screen.
 
-This contains everything you need to run your app locally.
+## Build
 
-View your app in AI Studio: https://ai.studio/apps/ffdb3e90-bd8f-49a2-91f8-dbd92041c3b4
+1. Install Android Studio with the Android SDK required by `compileSdk` in `app/build.gradle.kts`.
+2. Open this repository as an existing Gradle project.
+3. Allow Gradle to download the declared plugins and dependencies.
+4. Run the `app` configuration on an Android device or emulator.
 
-## Run Locally
+The project uses the standard Android debug signing configuration. A release build must be signed with a release key supplied by the build environment before distribution. Do not commit signing keys or passwords.
 
-**Prerequisites:**  [Android Studio](https://developer.android.com/studio)
+## Location
 
+The application can calculate solar data for its bundled location presets. Device location is optional and is requested only when the location action is selected. Grant either fine or coarse location permission to use the device's last known location.
 
-1. Open Android Studio
-2. Select **Open** and choose the directory containing this project
-3. Allow Android Studio to fix any incompatibilities as it imports the project.
-4. Create a file named `.env` in the project directory and set `GEMINI_API_KEY` in that file to your Gemini API key (see `.env.example` for an example)
-5. Remove this line from the app's `build.gradle.kts` file: `signingConfig = signingConfigs.getByName("debugConfig")`
-6. Run the app on an emulator or physical device
-7. If you have already published your app in AI Studio, please [request upload key reset](https://support.google.com/googleplay/android-developer/answer/9842756#zippy=%2Crequest-an-upload-key-reset) in Google Play Console.
+## Calculation notes
+
+Solar calculations use the NOAA-style fractional-year approximation. They are estimates, not an ephemeris-grade replacement for an observatory or navigation almanac. The calendar currently implements the 12-month sequence defined in `AstralCalendarEngine`; its month and season durations are part of that implementation.
+
+`System.nanoTime()` is a monotonic elapsed-time source with an arbitrary origin. It is not synchronized to the wall clock, so its digits must not be represented as the fractional part of UTC or Astral wall-clock time.
+
+## Tests
+
+Run the unit and Robolectric tests from Android Studio's test runner. Run instrumented tests on an Android device or emulator with the connected-device test runner.
