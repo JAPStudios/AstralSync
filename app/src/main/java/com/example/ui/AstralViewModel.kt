@@ -259,12 +259,12 @@ class AstralViewModel : ViewModel() {
         val aTimeFmt = String.format("%02d:%02d:%02d Astral", astralTime.hours, astralTime.minutes, astralTime.seconds)
 
         val explanation = buildString {
-            append("1. Local sunrise at ${state.calcLocation.name} was at $sunriseStr standard time (00:00 Astral Time).\n")
-            append("2. Elapsed time from sunrise to target time: ${astralTime.hours}h ${astralTime.minutes}m (${astralTime.totalSecondsFromSunrise.toInt()} seconds).\n")
-            append("3. Earth Age Year: ~4.54 Billion Years (${astralDate.earthAgeFormatted}).\n")
-            append("4. Planetary Month: Month ${astralDate.monthOrder} (${astralDate.monthName} - ${astralDate.monthMeaning}), Day ${astralDate.dayFormatted}.\n")
-            append("5. Astronomical Season: ${astralDate.seasonName} (${String.format("%.1f", astralDate.seasonDay)} / 91.31 days).\n")
-            append("6. Archetype: ${astralDate.zodiacGod.deity} (${astralDate.zodiacGod.sign}) | Chinese Zodiac: ${astralDate.chineseZodiac} | Mayan Tzolk'in: ${astralDate.mayanSign}.")
+            append("1. Local ${astralTime.timeAnchorLabel.lowercase()} at ${state.calcLocation.name} was at $anchorStr local time (00:00 Astral Time).\n")
+            append("2. Elapsed time from ${astralTime.timeAnchorLabel.lowercase()} to target time: ${astralTime.hours}h ${astralTime.minutes}m (${astralTime.totalSecondsFromSunrise.toInt()} seconds).\n")
+            append("3. Approximate Earth-age counter (${astralDate.earthAgeFormatted}).\n")
+            append("4. Astral month: ${astralDate.monthOrder} (${astralDate.monthName} - ${astralDate.monthMeaning}), Day ${astralDate.dayFormatted}.\n")
+            append("5. Astral calendar season: ${astralDate.seasonName} (${String.format("%.1f", astralDate.seasonDay)} / 91.31 days).\n")
+            append("6. Archetype: ${astralDate.zodiacGod.deity} (${astralDate.zodiacGod.sign}) | Chinese zodiac (Gregorian-year basis): ${astralDate.chineseZodiac} | Mayan 20-day name: ${astralDate.mayanSign}.")
         }
 
         val result = AstralDateConversionResult(
