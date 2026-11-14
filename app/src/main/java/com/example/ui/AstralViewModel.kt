@@ -218,11 +218,18 @@ class AstralViewModel : ViewModel() {
 
     fun computeCalculation() {
         val state = _uiState.value
-        if (!AstralCalendarEngine.isValidGregorianDate(state.calcYear, state.calcMonth, state.calcDay) ||
-            state.calcHour !in 0..23 || state.calcMinute !in 0..59
+        if (!AstralCalendarEngine.isValidLocalDateTime(
+                state.calcYear,
+                state.calcMonth,
+                state.calcDay,
+                state.calcHour,
+                state.calcMinute,
+                TimeZone.getTimeZone(state.calcLocation.timeZoneId)
+            )
         ) return
 
         val cal = Calendar.getInstance(TimeZone.getTimeZone(state.calcLocation.timeZoneId)).apply {
+            isLenient = false
             clear()
             set(Calendar.YEAR, state.calcYear)
             set(Calendar.MONTH, state.calcMonth - 1)
