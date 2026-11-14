@@ -317,8 +317,8 @@ fun ClockScreen(
                         }
                     }
 
-                    // Active Biological Trigger Banner
-                    state.quantumChronometry.activeBiologicalTrigger?.let { trigger ->
+                    // Active elapsed-time reference window
+                    state.quantumChronometry.activeTimingReference?.let { reference ->
                         Spacer(modifier = Modifier.height(10.dp))
                         Surface(
                             color = AuroraGreen.copy(alpha = 0.15f),
@@ -327,7 +327,7 @@ fun ClockScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "ELAPSED-TIME WINDOW: $trigger",
+                                text = "ELAPSED-TIME REFERENCE: $reference",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = AuroraGreen,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -338,8 +338,8 @@ fun ClockScreen(
                     if (state.isHighPrecisionQuantum) {
                         Spacer(modifier = Modifier.height(12.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            QuantumUnitRow("Millisecond (10⁻³ s)", "${state.quantumChronometry.milliseconds} ms", "1/1,000s (Camera flash = 1ms)")
-                            QuantumUnitRow("Microsecond (10⁻⁶ s)", "${state.quantumChronometry.microseconds} µs", "Eye blink ~350,000 µs | Snap ~150,000 µs")
+                            QuantumUnitRow("Millisecond (10⁻³ s)", "${state.quantumChronometry.milliseconds} ms", "One-thousandth of a second")
+                            QuantumUnitRow("Microsecond (10⁻⁶ s)", "${state.quantumChronometry.microseconds} µs", "350 ms and 150 ms reference intervals")
                             QuantumUnitRow("Nanosecond (10⁻⁹ s)", "${state.quantumChronometry.nanoseconds} ns", "Distance light travels ~30 cm in 1 ns")
                             QuantumUnitRow("Picosecond (10⁻¹² s)", "${state.quantumChronometry.picoseconds} ps", "Decimal scale conversion; not directly measured")
                             QuantumUnitRow("Femtosecond (10⁻¹⁵ s)", "${state.quantumChronometry.femtoseconds} fs", "Decimal scale conversion; not directly measured")
