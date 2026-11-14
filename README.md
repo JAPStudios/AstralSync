@@ -22,7 +22,7 @@ gradlew.bat :app:testDebugUnitTest
 
 The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
-The project retains its AI Studio release and debug signing configurations. The debug keystore is supplied by the build environment; CI creates a temporary one for verification. Do not commit signing keys or passwords.
+The project retains its AI Studio release and debug signing configurations. The debug keystore is supplied by the build environment; CI creates a temporary one for verification. Release signing reads `KEYSTORE_PATH` (default: `my-upload-key.jks`), `STORE_PASSWORD`, and `KEY_PASSWORD`, using the `upload` alias. Do not commit signing keys or passwords.
 
 ## Location
 
