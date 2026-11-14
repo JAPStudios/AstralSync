@@ -10,7 +10,7 @@ import java.util.TimeZone
  * Planetary Astral Calendar Engine implementing:
  * - Twelve equal-duration months of 30.4375 days each
  * - True Earth Age Epoch (4.54 billion years from planetary birth)
- * - New System Month Order: April, June, May, February, Quintilis, Sextillia, September, October, November, December, Undecimus/March, January
+ * - New System Month Order: April, June, May, February, Quintilis, Sextillia, September, October, November, December, March, January
  * - Four equal-duration calendar seasons, with northern and southern ordering
  * - Astral archetypes, Gregorian-year Chinese zodiac approximations, and a 20-day name cycle
  * - Deep quantum chronometry down to Planck time
