@@ -205,11 +205,7 @@ fun AstralSolarDial(
                 color = SolarGoldLight
             )
             Text(
-                text = when (milestones.solarDayCondition) {
-                    AstralCalculator.SolarDayCondition.NORMAL -> "ASTRAL TIME (00:00 = SUNRISE)"
-                    AstralCalculator.SolarDayCondition.POLAR_DAY -> "ASTRAL TIME (NO SUNRISE; NOON ANCHOR)"
-                    AstralCalculator.SolarDayCondition.POLAR_NIGHT -> "ASTRAL TIME (NO SUNRISE; NOON ANCHOR)"
-                },
+                text = "ASTRAL TIME (00:00 = ${astralTime.timeAnchorLabel.uppercase()})",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 9.sp,
                     fontWeight = FontWeight.SemiBold,
