@@ -168,13 +168,9 @@ fun ClockScreen(
                         color = TextPrimary
                     )
 
-                    // Milliseconds & Microseconds
+                    // Wall-clock time is sourced from millisecond-resolution system time.
                     Text(
-                        text = String.format(
-                            ".%03d ms  %03d µs",
-                            state.astralTime.milliseconds,
-                            state.astralTime.microseconds
-                        ),
+                        text = String.format(".%03d ms", state.astralTime.milliseconds),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.SemiBold
@@ -285,12 +281,12 @@ fun ClockScreen(
                             Icon(Icons.Default.AllInclusive, contentDescription = null, tint = CelestialCyan, modifier = Modifier.size(20.dp))
                             Column {
                                 Text(
-                                    text = "Deep Quantum Units & Physical Limits",
+                                    text = "Elapsed-Time Scale Conversions",
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                     color = TextPrimary
                                 )
                                 Text(
-                                    text = "Sub-atomic chronometry down to Planck time",
+                                    text = "Elapsed-time scale conversions (theoretical below nanoseconds)",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )
@@ -332,9 +328,9 @@ fun ClockScreen(
                             QuantumUnitRow("Picosecond (10⁻¹² s)", "${state.quantumChronometry.picoseconds} ps", "1 ps is to 1s as 1s is to 31,689 years")
                             QuantumUnitRow("Femtosecond (10⁻¹⁵ s)", "${state.quantumChronometry.femtoseconds} fs", "Chemical bond vibration timescale")
                             QuantumUnitRow("Attosecond (10⁻¹⁸ s)", "${state.quantumChronometry.attoseconds} as", "Electron transit around atom")
-                            QuantumUnitRow("Zeptosecond (10⁻²¹ s)", state.quantumChronometry.zeptoseconds, "Fastest measured event in nuclear physics")
-                            QuantumUnitRow("Yoctosecond (10⁻²⁴ s)", state.quantumChronometry.yoctoseconds, "Smallest official SI prefix (Latin octo / 8)")
-                            QuantumUnitRow("Planck Time (5.39×10⁻⁴⁴ s)", state.quantumChronometry.planckTimes, "Shortest theoretical interval in quantum physics")
+                            QuantumUnitRow("Zeptosecond (10⁻²¹ s)", state.quantumChronometry.zeptoseconds, "Mathematical scale conversion; not directly measured")
+                            QuantumUnitRow("Yoctosecond (10⁻²⁴ s)", state.quantumChronometry.yoctoseconds, "Mathematical scale conversion; not directly measured")
+                            QuantumUnitRow("Planck Time (5.39×10⁻⁴⁴ s)", state.quantumChronometry.planckTimes, "Ratio to the Planck-time constant; not a physical measurement")
                         }
                     }
                 }
