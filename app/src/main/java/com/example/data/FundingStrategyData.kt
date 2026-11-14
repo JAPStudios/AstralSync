@@ -111,6 +111,6 @@ object FundingStrategyData {
     val SCOPE_NOTE = ScopeNote(
         citation = "AstralSync calculation and feature scope",
         keyPrinciple = "Solar-event and solar-position values are estimates based on NOAA-style equations. Accuracy depends on the model assumptions, coordinates, date, and time-zone data.",
-        applicationToAstralSync = "The application does not measure personal light exposure, sleep, melatonin, or circadian phase. It does not diagnose or treat a medical condition and its solar azimuth is not a magnetic compass or navigation instrument. Funding eligibility is determined by each program's current official rules; no tax classification or grant award is asserted here."
+        applicationToAstralSync = "The application does not measure personal light exposure, sleep, melatonin, or circadian phase. It does not diagnose or treat a medical condition and its solar azimuth is not a magnetic compass or navigation instrument. Funding eligibility is program-specific and must be checked against each current official notice."
     )
 }
