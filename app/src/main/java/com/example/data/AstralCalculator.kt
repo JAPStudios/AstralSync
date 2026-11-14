@@ -46,9 +46,12 @@ object AstralCalculator {
      * Compute astronomical solar milestones for a given latitude, longitude, and day timestamp.
      */
     fun computeMilestones(latitude: Double, longitude: Double, timestampMillis: Long, timeZone: TimeZone = TimeZone.getDefault()): SolarMilestones {
+        require(latitude.isFinite() && latitude in -90.0..90.0) { "Latitude must be between -90 and 90 degrees." }
+        require(longitude.isFinite() && longitude in -180.0..180.0) { "Longitude must be between -180 and 180 degrees." }
+
         val cal = Calendar.getInstance(timeZone).apply { timeInMillis = timestampMillis }
         val dayOfYear = cal.get(Calendar.DAY_OF_YEAR)
-        val year = cal.get(Calendar.YEAR)
+        val daysInYear = if (cal.getActualMaximum(Calendar.DAY_OF_YEAR) == 366) 366.0 else 365.0
 
         // Day start in UTC
         val midnightCal = Calendar.getInstance(timeZone).apply {
@@ -62,7 +65,8 @@ object AstralCalculator {
         val tzOffsetHours = timeZone.getOffset(timestampMillis) / 3600000.0
 
         // Fractional year in radians
-        val gamma = 2.0 * Math.PI / 365.0 * (dayOfYear - 1 + (12.0 - 12.0) / 24.0)
+        // NOAA fractional-year angle evaluated at local solar noon.
+        val gamma = 2.0 * Math.PI / daysInYear * (dayOfYear - 1 + 0.5)
 
         // Equation of time in minutes
         val eqtime = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) -
@@ -129,20 +133,16 @@ object AstralCalculator {
     /**
      * Compute Astral Time where 00:00:00 is exact sunrise.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun computeAstralTime(
         currentTimeMillis: Long,
         nanoOffset: Long,
         milestones: SolarMilestones
     ): AstralTime {
-        // Difference from sunrise
-        var diffMillis = currentTimeMillis - milestones.sunriseStartMillis
-        val fullDayMillis = 24L * 3600L * 1000L
+        val fullDayMillis = 24L * 60L * 60L * 1000L
 
-        // Normalize to positive 24-hour cycle from sunrise
-        while (diffMillis < 0) {
-            diffMillis += fullDayMillis
-        }
-        diffMillis %= fullDayMillis
+        // floorMod handles timestamps before sunrise without an unbounded loop.
+        val diffMillis = Math.floorMod(currentTimeMillis - milestones.sunriseStartMillis, fullDayMillis)
 
         val totalSeconds = diffMillis / 1000.0
         val totalSecInt = diffMillis / 1000
@@ -151,8 +151,10 @@ object AstralCalculator {
         val seconds = (totalSecInt % 60).toInt()
         val millis = (diffMillis % 1000).toInt()
 
-        val micros = (nanoOffset / 1000 % 1000).toInt()
-        val nanos = (nanoOffset % 1000).toInt()
+        // System.nanoTime() has an arbitrary monotonic origin and cannot provide
+        // the sub-millisecond fraction of currentTimeMillis.
+        val micros = 0
+        val nanos = 0
 
         val progress = (diffMillis.toFloat() / fullDayMillis.toFloat()).coerceIn(0f, 1f)
 
@@ -216,11 +218,16 @@ object AstralCalculator {
      * Compute current Solar Elevation and Azimuth for celestial compass and dial.
      */
     fun computeSolarPosition(latitude: Double, longitude: Double, timestampMillis: Long): SolarPosition {
+        require(latitude.isFinite() && latitude in -90.0..90.0) { "Latitude must be between -90 and 90 degrees." }
+        require(longitude.isFinite() && longitude in -180.0..180.0) { "Longitude must be between -180 and 180 degrees." }
+
         val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = timestampMillis }
         val dayOfYear = cal.get(Calendar.DAY_OF_YEAR)
-        val hour = cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 60.0 + cal.get(Calendar.SECOND) / 3600.0
+        val daysInYear = if (cal.getActualMaximum(Calendar.DAY_OF_YEAR) == 366) 366.0 else 365.0
+        val hour = cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 60.0 +
+                cal.get(Calendar.SECOND) / 3600.0 + cal.get(Calendar.MILLISECOND) / 3_600_000.0
 
-        val gamma = 2.0 * Math.PI / 365.0 * (dayOfYear - 1 + (hour - 12.0) / 24.0)
+        val gamma = 2.0 * Math.PI / daysInYear * (dayOfYear - 1 + (hour - 12.0) / 24.0)
 
         val eqtime = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) -
                 0.014615 * cos(2 * gamma) - 0.040849 * sin(2 * gamma))
@@ -230,8 +237,8 @@ object AstralCalculator {
                 0.002697 * cos(3 * gamma) + 0.00148 * sin(3 * gamma)
 
         val timeOffset = eqtime + 4.0 * longitude
-        val trueSolarTime = (hour * 60.0 + timeOffset) % 1440.0
-        val haDeg = if (trueSolarTime / 4.0 < 0) trueSolarTime / 4.0 + 180.0 else trueSolarTime / 4.0 - 180.0
+        val trueSolarTime = ((hour * 60.0 + timeOffset) % 1440.0 + 1440.0) % 1440.0
+        val haDeg = trueSolarTime / 4.0 - 180.0
         val haRad = Math.toRadians(haDeg)
         val latRad = Math.toRadians(latitude)
 
@@ -239,13 +246,18 @@ object AstralCalculator {
         val zenithRad = acos(cosZenith.coerceIn(-1.0, 1.0))
         val elevationDeg = 90.0 - Math.toDegrees(zenithRad)
 
-        val cosAzimuth = (sin(decl) - sin(latRad) * cos(zenithRad)) / (cos(latRad) * sin(zenithRad))
-        var azimuthRad = acos(cosAzimuth.coerceIn(-1.0, 1.0))
-        var azimuthDeg = Math.toDegrees(azimuthRad)
-        if (haDeg > 0) {
-            azimuthDeg = (azimuthDeg + 180.0) % 360.0
+        // atan2 preserves the correct quadrant and remains stable near the horizon.
+        // At a geographic pole the azimuth is undefined; return a neutral bearing.
+        val azimuthDeg = if (abs(cos(latRad) * sin(zenithRad)) < 1e-12) {
+            0.0
         } else {
-            azimuthDeg = (540.0 - azimuthDeg) % 360.0
+            val azimuth = Math.toDegrees(
+                atan2(
+                    sin(haRad),
+                    cos(haRad) * sin(latRad) - tan(decl) * cos(latRad)
+                )
+            ) + 180.0
+            ((azimuth % 360.0) + 360.0) % 360.0
         }
 
         return SolarPosition(
