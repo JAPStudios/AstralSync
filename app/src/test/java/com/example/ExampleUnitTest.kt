@@ -243,6 +243,29 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testSolarPositionAtEquinoxNoonPointsSouth() {
+        val date = java.time.Instant.parse("2024-03-20T12:00:00Z").toEpochMilli()
+        val position = AstralCalculator.computeSolarPosition(40.0, 0.0, date)
+
+        assertTrue("Equinox noon elevation should be near 50 degrees", position.elevationDeg in 49.0..51.0)
+        assertTrue("The Sun should be near due south at northern-hemisphere solar noon", position.azimuthDeg in 170.0..190.0)
+    }
+
+    @Test
+    fun testCalculatedSunriseAndSunsetAreNearHorizon() {
+        val timeZone = TimeZone.getTimeZone("UTC")
+        val date = java.time.Instant.parse("2024-03-20T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(40.0, 0.0, date, timeZone)
+        val sunrise = AstralCalculator.computeSolarPosition(40.0, 0.0, milestones.sunriseStartMillis)
+        val sunset = AstralCalculator.computeSolarPosition(40.0, 0.0, milestones.sunsetEndMillis)
+
+        assertTrue("Calculated sunrise should be close to the horizon", kotlin.math.abs(sunrise.elevationDeg) < 1.2)
+        assertTrue("Calculated sunset should be close to the horizon", kotlin.math.abs(sunset.elevationDeg) < 1.2)
+        assertTrue("Sunrise should be in the eastern sky", sunrise.azimuthDeg in 80.0..100.0)
+        assertTrue("Sunset should be in the western sky", sunset.azimuthDeg in 260.0..280.0)
+    }
+
+    @Test
     fun testSolarNoonUsesDaylightOffsetOnSpringForwardDate() {
         val timeZone = TimeZone.getTimeZone("America/New_York")
         val date = java.time.Instant.parse("2024-03-10T12:00:00Z").toEpochMilli()
