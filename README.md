@@ -4,10 +4,23 @@ AstralSync is an Android astronomical timekeeping application. It provides a sun
 
 ## Build
 
-1. Install Android Studio with the Android SDK required by `compileSdk` in `app/build.gradle.kts`.
-2. Open this repository as an existing Gradle project.
-3. Allow Gradle to download the declared plugins and dependencies.
-4. Run the `app` configuration on an Android device or emulator.
+Install Android Studio with Android SDK Platform 36.1 and Build Tools 36.0.0. The repository includes the Gradle 9.3.1 wrapper.
+
+On macOS or Linux:
+
+```sh
+./gradlew :app:assembleDebug
+./gradlew :app:testDebugUnitTest
+```
+
+On Windows:
+
+```bat
+gradlew.bat :app:assembleDebug
+gradlew.bat :app:testDebugUnitTest
+```
+
+The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
 The project uses the standard Android debug signing configuration. A release build must be signed with a release key supplied by the build environment before distribution. Do not commit signing keys or passwords.
 
