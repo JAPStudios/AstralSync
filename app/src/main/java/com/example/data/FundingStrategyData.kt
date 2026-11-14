@@ -44,13 +44,13 @@ object FundingStrategyData {
             )
         ),
         GrantPillar(
-            category = "2. Open-Source Software & Digital Infrastructure",
+            category = "2. Public Software & Digital Infrastructure",
             targetFunders = listOf(
                 "NLnet Foundation (check current calls)",
                 "Open Technology Fund (check current programs)",
                 "Mozilla open-source support programs (check current calls)"
             ),
-            valueProposition = "The project can contribute open-source software for astronomical time calculations and local solar-event visualization. Funding availability and eligibility depend on each program's current rules.",
+            valueProposition = "The public repository can provide source material for astronomical time calculations and local solar-event visualization. Open-source program eligibility depends on an appropriate software license and each program's current rules.",
             grantSizeRange = "Depends on the active funding call",
             actionSteps = listOf(
                 "Check each funder's official call, geographic scope, applicant rules, and deadlines.",
