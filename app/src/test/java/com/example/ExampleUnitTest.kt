@@ -230,6 +230,38 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testSolarNoonUsesDaylightOffsetOnSpringForwardDate() {
+        val timeZone = TimeZone.getTimeZone("America/New_York")
+        val date = java.time.Instant.parse("2024-03-10T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 42.345996,
+            longitude = -74.246748,
+            timestampMillis = date,
+            timeZone = timeZone
+        )
+        val localNoon = java.util.Calendar.getInstance(timeZone).apply {
+            timeInMillis = milestones.solarNoonMillis
+        }
+        assertEquals(13, localNoon.get(java.util.Calendar.HOUR_OF_DAY))
+    }
+
+    @Test
+    fun testSolarNoonUsesStandardOffsetOnFallBackDate() {
+        val timeZone = TimeZone.getTimeZone("America/New_York")
+        val date = java.time.Instant.parse("2024-11-03T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 42.345996,
+            longitude = -74.246748,
+            timestampMillis = date,
+            timeZone = timeZone
+        )
+        val localNoon = java.util.Calendar.getInstance(timeZone).apply {
+            timeInMillis = milestones.solarNoonMillis
+        }
+        assertEquals(11, localNoon.get(java.util.Calendar.HOUR_OF_DAY))
+    }
+
+    @Test
     fun testSolarNoonFallsNearLocalMidday() {
         val timeZone = TimeZone.getTimeZone("America/New_York")
         val milestones = AstralCalculator.computeMilestones(
