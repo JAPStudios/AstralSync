@@ -292,7 +292,7 @@ fun CalendarScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text("CHINESE ZODIAC YEAR (GREGORIAN BASIS)", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                             Text(
                                 text = "Year of the ${state.astralDate.chineseZodiac}",
@@ -301,7 +301,7 @@ fun CalendarScreen(
                             )
                             Text("Gregorian-year basis; lunar new year is not applied.", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                         }
-                        Column(horizontalAlignment = Alignment.End) {
+                        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                             Text("MAYAN 20-DAY NAME CYCLE", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                             Text(
                                 text = state.astralDate.mayanSign,
