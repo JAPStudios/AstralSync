@@ -111,7 +111,7 @@ fun CircadianHealthScreen(
                                     color = TextPrimary
                                 )
                                 Text(
-                                    text = "Current Astral Hour: ${String.format("%02d:%02d", state.astralTime.hours, state.astralTime.minutes)} • Elevation: ${String.format("%.1f°", state.solarPosition.elevationDeg)}",
+                                    text = "Astral time (${state.astralTime.timeAnchorLabel} anchor): ${String.format("%02d:%02d", state.astralTime.hours, state.astralTime.minutes)} • Elevation: ${String.format("%.1f°", state.solarPosition.elevationDeg)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )
@@ -134,7 +134,7 @@ fun CircadianHealthScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 CircadianPhaseCard(
-                    timeRange = "Astral 00:00 – 01:30",
+                    timeRange = if (state.milestones.sunriseOccurs) "Astral 00:00 – 01:30" else "No sunrise; noon anchor",
                     title = "Phase 1: Morning Light Period",
                     benefit = "Daylight is an environmental cue for circadian timing. AstralSync estimates sunrise but does not measure light reaching the eyes or prescribe an exposure duration.",
                     accent = SolarGold,
@@ -155,7 +155,11 @@ fun CircadianHealthScreen(
                     icon = Icons.Default.WbTwilight
                 )
                 CircadianPhaseCard(
-                    timeRange = "Night Starts (Astronomical Twilight)",
+                    timeRange = when (state.milestones.astronomicalNightCondition) {
+                        com.example.data.AstralCalculator.AstronomicalNightCondition.STARTS -> "Night starts (astronomical twilight)"
+                        com.example.data.AstralCalculator.AstronomicalNightCondition.ALL_DAY -> "Astronomical night all day"
+                        com.example.data.AstralCalculator.AstronomicalNightCondition.DOES_NOT_OCCUR -> "No astronomical night today"
+                    },
                     title = "Phase 4: Astronomical Night",
                     benefit = "Astronomical night begins when the Sun is 18° below the horizon, where that threshold occurs. It does not identify sleep stages, melatonin levels, or biological recovery.",
                     accent = StarlightIndigo,
