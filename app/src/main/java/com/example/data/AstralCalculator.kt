@@ -66,7 +66,7 @@ object AstralCalculator {
 
         // Fractional year in radians
         // NOAA fractional-year angle evaluated at local solar noon.
-        val gamma = 2.0 * Math.PI / daysInYear * (dayOfYear - 1 + 0.5)
+        val gamma = 2.0 * Math.PI / daysInYear * (dayOfYear - 1)
 
         // Equation of time in minutes
         val eqtime = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) -
