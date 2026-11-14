@@ -29,8 +29,6 @@ import com.example.ui.theme.*
 fun FundingStrategyScreen(
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -62,7 +60,7 @@ fun FundingStrategyScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Funding AstralSync: The Open Competitor",
+                        text = "AstralSync Development & Support",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = TextPrimary
                     )
