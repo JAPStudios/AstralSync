@@ -5,8 +5,8 @@ import java.util.TimeZone
 import kotlin.math.*
 
 /**
- * High-precision astronomical calculations based on NOAA Solar Position Equations.
- * Calculates exact astronomical sunrise (top edge on horizon), solar noon,
+ * Astronomical estimates based on the NOAA solar position approximation.
+ * Estimates astronomical sunrise (top edge on horizon), solar noon,
  * golden hour, sunset, and night start (astronomical twilight).
  */
 object AstralCalculator {
@@ -131,7 +131,7 @@ object AstralCalculator {
     }
 
     /**
-     * Compute Astral Time where 00:00:00 is exact sunrise.
+     * Compute Astral Time where 00:00:00 is the estimated sunrise.
      */
     @Suppress("UNUSED_PARAMETER")
     fun computeAstralTime(
