@@ -8,11 +8,11 @@ import java.util.TimeZone
 
 /**
  * Planetary Astral Calendar Engine implementing:
- * - 30.4375 days per month (12-month model) and 28.096 days (13-month lunar model)
+ * - Twelve equal-duration months of 30.4375 days each
  * - True Earth Age Epoch (4.54 billion years from planetary birth)
  * - New System Month Order: April, June, May, February, Quintilis, Sextillia, September, October, November, December, Undecimus/March, January
- * - 4 Solar Seasons: Lent (Spring forth), Sem (Together as ume), Autumnus (Harvest), Winter (Time of water)
- * - Mythological Zodiac Gods, Chinese Zodiac animals, and Mayan Tzolk'in Day Signs
+ * - Four equal-duration calendar seasons, with northern and southern ordering
+ * - Astral archetypes, Gregorian-year Chinese zodiac approximations, and a 20-day name cycle
  * - Deep quantum chronometry down to Planck time
  */
 object AstralCalendarEngine {
@@ -66,7 +66,7 @@ object AstralCalendarEngine {
         "Horse", "Goat", "Monkey", "Rooster", "Dog", "Pig"
     )
 
-    val MAYAN_TZOLKIN_SIGNS = listOf(
+    val MAYAN_DAY_NAMES = listOf(
         "Crocodile (Imix)", "Wind (Ik')", "House (Ak'b'al)", "Lizard (K'an)", "Serpent (Chikchan)",
         "Death (Kimi)", "Deer (Manik')", "Rabbit (Lamat)", "Water (Muluk)", "Dog (Ok)",
         "Monkey (Chuwen)", "Grass (Eb')", "Reed (B'en)", "Jaguar (Ix)", "Eagle (Men)",
@@ -174,11 +174,14 @@ object AstralCalendarEngine {
         val chineseIndex = Math.floorMod(gYear - 4, 12)
         val chineseSign = CHINESE_ANIMALS[chineseIndex]
 
-        // Mayan Tzolk'in Sign (20-day cycle)
-        // Correlated: Day count mod 20
-        val totalEpochDays = (gYear * 365.25 + totalDaysInYear).toLong()
-        val mayanIndex = Math.floorMod(totalEpochDays, 20).toInt()
-        val mayanSign = MAYAN_TZOLKIN_SIGNS[mayanIndex]
+        // A 20-day name rotation anchored to 0001-01-01 in the proleptic
+        // Gregorian calendar. This is not a full GMT-correlated Tzolk'in date.
+        val yearsBeforeCurrent = gYear.toLong() - 1L
+        val daysBeforeCurrentYear = 365L * yearsBeforeCurrent +
+            yearsBeforeCurrent / 4L - yearsBeforeCurrent / 100L + yearsBeforeCurrent / 400L
+        val absoluteGregorianDay = daysBeforeCurrentYear + dayOfYear.toLong() - 1L
+        val mayanIndex = Math.floorMod(absoluteGregorianDay, 20L).toInt()
+        val mayanSign = MAYAN_DAY_NAMES[mayanIndex]
 
         val earthAgeFmt = String.format("%.4f Billion Years", earthAge / 1_000_000_000.0)
         val dayFmt = String.format("%.2f", dayInMonth)
