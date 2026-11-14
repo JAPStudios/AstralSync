@@ -244,10 +244,11 @@ class AstralViewModel : ViewModel() {
             isSouthernHemisphere = state.calcLocation.latitude < 0
         )
 
-        val sunriseCal = Calendar.getInstance(TimeZone.getTimeZone(state.calcLocation.timeZoneId)).apply {
-            timeInMillis = milestones.sunriseStartMillis
+        val anchorMillis = if (milestones.sunriseOccurs) milestones.sunriseStartMillis else milestones.solarNoonMillis
+        val anchorCal = Calendar.getInstance(TimeZone.getTimeZone(state.calcLocation.timeZoneId)).apply {
+            timeInMillis = anchorMillis
         }
-        val sunriseStr = String.format("%02d:%02d", sunriseCal.get(Calendar.HOUR_OF_DAY), sunriseCal.get(Calendar.MINUTE))
+        val anchorStr = String.format("%02d:%02d", anchorCal.get(Calendar.HOUR_OF_DAY), anchorCal.get(Calendar.MINUTE))
 
         val gFmt = String.format("%04d-%02d-%02d %02d:%02d", state.calcYear, state.calcMonth, state.calcDay, state.calcHour, state.calcMinute)
         val aTimeFmt = String.format("%02d:%02d:%02d Astral", astralTime.hours, astralTime.minutes, astralTime.seconds)
