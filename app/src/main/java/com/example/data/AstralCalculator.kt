@@ -64,16 +64,20 @@ object AstralCalculator {
         val dayOfYear = cal.get(Calendar.DAY_OF_YEAR)
         val daysInYear = if (cal.getActualMaximum(Calendar.DAY_OF_YEAR) == 366) 366.0 else 365.0
 
-        // Day start in UTC
-        val midnightCal = Calendar.getInstance(timeZone).apply {
-            timeInMillis = timestampMillis
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val midnightMillis = midnightCal.timeInMillis
-        val tzOffsetHours = timeZone.getOffset(timestampMillis) / 3600000.0
+        // Build UTC midnight for the local calendar date. Solar events are absolute
+        // instants; calculating them from local midnight plus the offset at midday
+        // produces a one-hour error on daylight-saving transition dates.
+        val utcMidnightMillis = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            clear()
+            set(
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH),
+                0,
+                0,
+                0
+            )
+        }.timeInMillis
 
         // Fractional year in radians
         // NOAA fractional-year angle evaluated at local solar noon.
@@ -90,10 +94,9 @@ object AstralCalculator {
 
         val latRad = Math.toRadians(latitude)
 
-        // Solar Noon in minutes from midnight UTC
+        // Solar noon in UTC minutes from UTC midnight.
         val solarNoonUtcMinutes = 720.0 - 4.0 * longitude - eqtime
-        val solarNoonLocalMinutes = solarNoonUtcMinutes + tzOffsetHours * 60.0
-        val solarNoonMillis = midnightMillis + (solarNoonLocalMinutes * 60.0 * 1000.0).toLong()
+        val solarNoonMillis = utcMidnightMillis + (solarNoonUtcMinutes * 60_000.0).toLong()
 
         fun cosineHourAngle(zenithDeg: Double): Double {
             val zenithRad = Math.toRadians(zenithDeg)
@@ -105,13 +108,8 @@ object AstralCalculator {
             if (!cosHa.isFinite() || cosHa !in -1.0..1.0) return null
 
             val hourAngleDeg = Math.toDegrees(acos(cosHa))
-            val deltaMinutes = 4.0 * hourAngleDeg
-            val localMinutes = if (isRise) {
-                solarNoonLocalMinutes - deltaMinutes
-            } else {
-                solarNoonLocalMinutes + deltaMinutes
-            }
-            return midnightMillis + (localMinutes * 60_000.0).toLong()
+            val deltaMillis = (4.0 * hourAngleDeg * 60_000.0).toLong()
+            return if (isRise) solarNoonMillis - deltaMillis else solarNoonMillis + deltaMillis
         }
 
         val sunriseStartEvent = getTimeForZenith(90.833, true)
