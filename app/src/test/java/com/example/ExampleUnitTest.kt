@@ -43,6 +43,7 @@ class ExampleUnitTest {
             milestones = milestones
         )
 
+        assertEquals("Sunrise", astralAtRise.timeAnchorLabel)
         assertEquals("Hour at sunrise must be 0", 0, astralAtRise.hours)
         assertEquals("Minute at sunrise must be 0", 0, astralAtRise.minutes)
         assertEquals("Second at sunrise must be 0", 0, astralAtRise.seconds)
@@ -187,9 +188,11 @@ class ExampleUnitTest {
         )
 
         assertEquals(AstralCalculator.SolarDayCondition.POLAR_DAY, milestones.solarDayCondition)
+        assertEquals(AstralCalculator.AstronomicalNightCondition.DOES_NOT_OCCUR, milestones.astronomicalNightCondition)
         assertFalse(milestones.sunriseOccurs)
         assertFalse(milestones.sunsetOccurs)
         val time = AstralCalculator.computeAstralTime(date, 0L, milestones)
+        assertEquals("Solar noon", time.timeAnchorLabel)
         assertEquals("Continuous Daylight (Midnight Sun)", time.currentMilestone)
         assertEquals("Sunset does not occur", time.nextMilestone)
     }
@@ -210,6 +213,20 @@ class ExampleUnitTest {
         val time = AstralCalculator.computeAstralTime(date, 0L, milestones)
         assertEquals("Continuous Polar Night", time.currentMilestone)
         assertEquals("Sunrise does not occur", time.nextMilestone)
+    }
+
+    @Test
+    fun testAstronomicalNightCanPersistAllDayAtExtremeLatitude() {
+        val date = java.time.Instant.parse("2024-12-21T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 89.5,
+            longitude = 0.0,
+            timestampMillis = date,
+            timeZone = TimeZone.getTimeZone("UTC")
+        )
+
+        assertEquals(AstralCalculator.SolarDayCondition.POLAR_NIGHT, milestones.solarDayCondition)
+        assertEquals(AstralCalculator.AstronomicalNightCondition.ALL_DAY, milestones.astronomicalNightCondition)
     }
 
     @Test
