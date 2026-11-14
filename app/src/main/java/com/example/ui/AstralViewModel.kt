@@ -146,8 +146,9 @@ class AstralViewModel : ViewModel() {
                     )
                 }
 
-                // Refresh the displayed clock and solar calculations at approximately 30 FPS
-                delay(33L)
+                // The clock displays whole seconds; a 1 Hz refresh avoids needless repeated
+                // calendar and solar calculations while keeping the display current.
+                delay(1000L)
             }
         }
     }
