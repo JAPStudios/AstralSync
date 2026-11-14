@@ -166,6 +166,42 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testPolarDayDoesNotInventSunriseOrSunset() {
+        val date = java.time.Instant.parse("2024-06-21T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 78.2232,
+            longitude = 15.6469,
+            timestampMillis = date,
+            timeZone = TimeZone.getTimeZone("Arctic/Longyearbyen")
+        )
+
+        assertEquals(AstralCalculator.SolarDayCondition.POLAR_DAY, milestones.solarDayCondition)
+        assertFalse(milestones.sunriseOccurs)
+        assertFalse(milestones.sunsetOccurs)
+        val time = AstralCalculator.computeAstralTime(date, 0L, milestones)
+        assertEquals("Continuous Daylight (Midnight Sun)", time.currentMilestone)
+        assertEquals("Sunset does not occur", time.nextMilestone)
+    }
+
+    @Test
+    fun testPolarNightDoesNotInventSunriseOrSunset() {
+        val date = java.time.Instant.parse("2024-12-21T12:00:00Z").toEpochMilli()
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 78.2232,
+            longitude = 15.6469,
+            timestampMillis = date,
+            timeZone = TimeZone.getTimeZone("Arctic/Longyearbyen")
+        )
+
+        assertEquals(AstralCalculator.SolarDayCondition.POLAR_NIGHT, milestones.solarDayCondition)
+        assertFalse(milestones.sunriseOccurs)
+        assertFalse(milestones.sunsetOccurs)
+        val time = AstralCalculator.computeAstralTime(date, 0L, milestones)
+        assertEquals("Continuous Polar Night", time.currentMilestone)
+        assertEquals("Sunrise does not occur", time.nextMilestone)
+    }
+
+    @Test
     fun testSolarNoonFallsNearLocalMidday() {
         val timeZone = TimeZone.getTimeZone("America/New_York")
         val milestones = AstralCalculator.computeMilestones(
