@@ -124,6 +124,33 @@ object AstralCalendarEngine {
     }
 
     /**
+     * Rejects local clock times skipped by a time-zone transition, such as 02:30
+     * on a spring-forward date.
+     */
+    fun isValidLocalDateTime(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        timeZone: TimeZone
+    ): Boolean {
+        if (!isValidGregorianDate(year, month, day) || hour !in 0..23 || minute !in 0..59) return false
+        val calendar = Calendar.getInstance(timeZone).apply {
+            isLenient = false
+            clear()
+            set(year, month - 1, day, hour, minute, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return try {
+            calendar.timeInMillis
+            true
+        } catch (_: IllegalArgumentException) {
+            false
+        }
+    }
+
+    /**
      * Converts a given timestamp (or Gregorian date) into the AstralSync New System Date.
      */
     fun calculateAstralDate(
