@@ -105,6 +105,17 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testGregorianDateValidationRejectsInvalidMonthLengths() {
+        assertTrue(AstralCalendarEngine.isValidGregorianDate(2024, 2, 29))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(2023, 2, 29))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(2024, 4, 31))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(2024, 13, 1))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(0, 1, 1))
+        assertTrue(AstralCalendarEngine.isValidGregorianDate(2000, 2, 29))
+        assertFalse(AstralCalendarEngine.isValidGregorianDate(1900, 2, 29))
+    }
+
+    @Test
     fun testCalendarHandlesLeapDayAndYearEndWithinTwelveMonthSequence() {
         val utc = TimeZone.getTimeZone("UTC")
         val leapDay = java.util.Calendar.getInstance(utc).apply {
