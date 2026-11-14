@@ -106,6 +106,14 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testLocalDateTimeValidationRejectsSpringForwardGap() {
+        val newYork = TimeZone.getTimeZone("America/New_York")
+        assertFalse(AstralCalendarEngine.isValidLocalDateTime(2024, 3, 10, 2, 30, newYork))
+        assertTrue(AstralCalendarEngine.isValidLocalDateTime(2024, 3, 10, 3, 30, newYork))
+        assertTrue(AstralCalendarEngine.isValidLocalDateTime(2024, 11, 3, 1, 30, newYork))
+    }
+
+    @Test
     fun testAstralDateUsesTheSelectedLocalCalendarDate() {
         val instant = java.time.Instant.parse("2024-01-01T04:30:00Z").toEpochMilli()
         val utcDate = AstralCalendarEngine.calculateAstralDate(instant)
