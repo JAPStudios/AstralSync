@@ -340,7 +340,7 @@ fun ClockScreen(
         // Solar Milestones Grid
         item {
             Text(
-                text = "Astronomical Solar Milestones (Exact Horizon)",
+                text = "Estimated Astronomical Solar Milestones",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = TextPrimary
             )
@@ -564,10 +564,8 @@ fun MilestoneCard(
 }
 
 private fun computeRelativeAstral(targetMillis: Long, sunriseMillis: Long): String {
-    var diff = targetMillis - sunriseMillis
-    val dayMillis = 24L * 3600L * 1000L
-    while (diff < 0) diff += dayMillis
-    diff %= dayMillis
+    val dayMillis = 24L * 60L * 60L * 1000L
+    val diff = Math.floorMod(targetMillis - sunriseMillis, dayMillis)
     val totalSec = diff / 1000
     val h = totalSec / 3600
     val m = (totalSec % 3600) / 60
