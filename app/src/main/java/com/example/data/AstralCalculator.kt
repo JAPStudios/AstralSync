@@ -49,6 +49,7 @@ object AstralCalculator {
         val progressPercentOfDay: Float,
         val currentMilestone: String,
         val nextMilestone: String,
+        val timeAnchorLabel: String,
         val timeUntilNextMilestone: String
     )
 
@@ -196,6 +197,7 @@ object AstralCalculator {
             progressPercentOfDay = progress,
             currentMilestone = currentMilestone,
             nextMilestone = nextMilestone,
+            timeAnchorLabel = if (milestones.sunriseOccurs) "Sunrise" else "Solar noon",
             timeUntilNextMilestone = timeUntil
         )
     }
