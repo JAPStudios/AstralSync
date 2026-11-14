@@ -36,7 +36,7 @@ Solar calculations use the NOAA-style fractional-year approximation. They are es
 
 ### Calendar model
 
-- Gregorian dates are mapped proportionally into a fixed 365.25-day Astral year.
+- Gregorian dates in the selected location's time zone are mapped proportionally into a fixed 365.25-day Astral year.
 - The custom calendar uses twelve equal 30.4375-day months and four equal 91.3125-day calendar seasons. These are model intervals, not measured astronomical season lengths.
 - The twelve archetypes follow equal Astral-year segments rather than standard tropical-zodiac date boundaries.
 - The Chinese zodiac label is a Gregorian-year approximation; the lunar-new-year boundary is not calculated.
