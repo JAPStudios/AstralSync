@@ -111,6 +111,19 @@ object AstralCalendarEngine {
     )
 
     /**
+     * Validates a proleptic Gregorian date without silently normalizing invalid days.
+     */
+    fun isValidGregorianDate(year: Int, month: Int, day: Int): Boolean {
+        if (year !in 1..9999 || month !in 1..12) return false
+        val daysInMonth = when (month) {
+            2 -> if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)) 29 else 28
+            4, 6, 9, 11 -> 30
+            else -> 31
+        }
+        return day in 1..daysInMonth
+    }
+
+    /**
      * Converts a given timestamp (or Gregorian date) into the AstralSync New System Date.
      */
     fun calculateAstralDate(timestampMillis: Long, isSouthernHemisphere: Boolean = false): AstralDateResult {
