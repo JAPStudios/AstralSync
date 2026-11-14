@@ -126,8 +126,12 @@ object AstralCalendarEngine {
     /**
      * Converts a given timestamp (or Gregorian date) into the AstralSync New System Date.
      */
-    fun calculateAstralDate(timestampMillis: Long, isSouthernHemisphere: Boolean = false): AstralDateResult {
-        val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = timestampMillis }
+    fun calculateAstralDate(
+        timestampMillis: Long,
+        isSouthernHemisphere: Boolean = false,
+        timeZone: TimeZone = TimeZone.getTimeZone("UTC")
+    ): AstralDateResult {
+        val cal = Calendar.getInstance(timeZone).apply { timeInMillis = timestampMillis }
         val gYear = cal.get(Calendar.YEAR)
         val dayOfYear = cal.get(Calendar.DAY_OF_YEAR)
         val daysInGregorianYear = cal.getActualMaximum(Calendar.DAY_OF_YEAR)
