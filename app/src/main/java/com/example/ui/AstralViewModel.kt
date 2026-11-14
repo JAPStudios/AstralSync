@@ -66,7 +66,7 @@ enum class NavigationScreen(val label: String) {
     CALENDAR("Planetary Calendar"),
     HEALTH("Circadian Suite"),
     CALCULATOR("Converter"),
-    STRATEGY("Funding & Legal")
+    STRATEGY("Project & Support")
 }
 
 data class AstralDateConversionResult(
