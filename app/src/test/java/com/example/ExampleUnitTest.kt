@@ -106,6 +106,20 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testMayanTwentyDayNameCycleAdvancesAcrossLeapDay() {
+        val utc = TimeZone.getTimeZone("UTC")
+        fun result(date: String) = AstralCalendarEngine.calculateAstralDate(
+            java.time.Instant.parse(date).toEpochMilli()
+        )
+        val feb28 = result("2024-02-28T12:00:00Z")
+        val feb29 = result("2024-02-29T12:00:00Z")
+        val mar01 = result("2024-03-01T12:00:00Z")
+        val names = AstralCalendarEngine.MAYAN_DAY_NAMES
+        assertEquals((names.indexOf(feb28.mayanSign) + 1) % 20, names.indexOf(feb29.mayanSign))
+        assertEquals((names.indexOf(feb29.mayanSign) + 1) % 20, names.indexOf(mar01.mayanSign))
+    }
+
+    @Test
     fun testGregorianDateValidationRejectsInvalidMonthLengths() {
         assertTrue(AstralCalendarEngine.isValidGregorianDate(2024, 2, 29))
         assertFalse(AstralCalendarEngine.isValidGregorianDate(2023, 2, 29))
