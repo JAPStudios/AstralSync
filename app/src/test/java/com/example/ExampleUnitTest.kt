@@ -134,4 +134,19 @@ class ExampleUnitTest {
         assertEquals("000", result.attoseconds)
     }
 
+    @Test
+    fun testSolarNoonFallsNearLocalMidday() {
+        val timeZone = TimeZone.getTimeZone("America/New_York")
+        val milestones = AstralCalculator.computeMilestones(
+            latitude = 42.345996,
+            longitude = -74.246748,
+            timestampMillis = 1682416800000L,
+            timeZone = timeZone
+        )
+        val localNoon = java.util.Calendar.getInstance(timeZone).apply {
+            timeInMillis = milestones.solarNoonMillis
+        }
+        assertEquals(12, localNoon.get(java.util.Calendar.HOUR_OF_DAY))
+    }
+
 }
