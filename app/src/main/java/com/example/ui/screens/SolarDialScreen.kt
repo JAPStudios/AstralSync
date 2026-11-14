@@ -53,7 +53,7 @@ fun SolarDialScreen(
                         color = TextPrimary
                     )
                     Text(
-                        text = "Real-time 24h orbital projection anchored to ${state.currentCoordinate.name}",
+                        text = "Sunrise-referenced 24-hour dial for ${state.currentCoordinate.name}",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
@@ -109,23 +109,23 @@ fun SolarDialScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 ArcDescriptionRow(
-                    name = "Left Horizon (180° / 00:00:00)",
-                    meaning = "Immediate sunrise start: top edge of the sun crosses the local horizontal plane. This resets the Astral clock to 00:00:00 everywhere on Earth.",
+                    name = "Sunrise Anchor (00:00:00)",
+                    meaning = "When sunrise occurs, 00:00 begins at the estimated local sunrise. During polar day or polar night, when sunrise does not occur, AstralSync uses local solar noon as its time anchor.",
                     accent = SolarHorizon
                 )
                 ArcDescriptionRow(
-                    name = "Top Zenith (270° / ~06:00 Astral)",
-                    meaning = "Solar Noon: The sun achieves its highest celestial altitude for the day across the local observer's meridian.",
+                    name = "Solar Noon (Highest Solar Altitude)",
+                    meaning = "Solar noon is the Sun's highest daily altitude. Its Astral clock reading varies with the length of the daylight period.",
                     accent = SolarGold
                 )
                 ArcDescriptionRow(
-                    name = "Right Horizon (0° / ~12:00-14:00 Astral)",
-                    meaning = "Sunset: Bottom edge touches horizon until top edge fully disappears. In AstralSync, this occurs between 12:00 and 15:00 depending on season.",
+                    name = "Sunset (when it occurs)",
+                    meaning = "Sunset milestones are displayed when the Sun crosses the horizon. They do not occur during continuous polar daylight or polar night.",
                     accent = SolarAmber
                 )
                 ArcDescriptionRow(
                     name = "Lower Arc (Night / Astronomical Twilight)",
-                    meaning = "Astronomical night: begins when the sun is 18° below the horizon. The sky is dark enough for deep-space astronomy and melatonin synthesis.",
+                    meaning = "Astronomical night begins when the Sun is 18° below the horizon. At high latitudes this threshold may not be reached, or it may persist throughout the day.",
                     accent = CelestialCyan
                 )
             }
