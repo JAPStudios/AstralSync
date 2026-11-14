@@ -43,7 +43,8 @@ data class AstralUiState(
     ),
     val astralDate: AstralCalendarEngine.AstralDateResult = AstralCalendarEngine.calculateAstralDate(
         timestampMillis = System.currentTimeMillis(),
-        isSouthernHemisphere = false
+        isSouthernHemisphere = false,
+        timeZone = TimeZone.getTimeZone(LocationPresets.WINDHAM_NY.timeZoneId)
     ),
     val quantumChronometry: AstralCalendarEngine.QuantumChronometry = AstralCalendarEngine.computeQuantumChronometry(
         elapsedSeconds = 0.0,
@@ -126,7 +127,8 @@ class AstralViewModel : ViewModel() {
 
                 val astralDate = AstralCalendarEngine.calculateAstralDate(
                     timestampMillis = now,
-                    isSouthernHemisphere = _uiState.value.isSouthernHemisphere
+                    isSouthernHemisphere = _uiState.value.isSouthernHemisphere,
+                    timeZone = tz
                 )
 
                 val quantum = AstralCalendarEngine.computeQuantumChronometry(
@@ -247,7 +249,8 @@ class AstralViewModel : ViewModel() {
 
         val astralDate = AstralCalendarEngine.calculateAstralDate(
             timestampMillis = targetMillis,
-            isSouthernHemisphere = state.calcLocation.latitude < 0
+            isSouthernHemisphere = state.calcLocation.latitude < 0,
+            timeZone = TimeZone.getTimeZone(state.calcLocation.timeZoneId)
         )
 
         val anchorMillis = if (milestones.sunriseOccurs) milestones.sunriseStartMillis else milestones.solarNoonMillis
