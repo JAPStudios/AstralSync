@@ -146,7 +146,7 @@ class AstralViewModel : ViewModel() {
                     )
                 }
 
-                // Update at ~30 FPS for smooth sub-microsecond and visual pulses
+                // Refresh the displayed clock and solar calculations at approximately 30 FPS
                 delay(33L)
             }
         }

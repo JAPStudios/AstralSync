@@ -168,13 +168,9 @@ fun ClockScreen(
                         color = TextPrimary
                     )
 
-                    // Milliseconds & Microseconds
+                    // Wall-clock time is sourced from millisecond-resolution system time.
                     Text(
-                        text = String.format(
-                            ".%03d ms  %03d µs",
-                            state.astralTime.milliseconds,
-                            state.astralTime.microseconds
-                        ),
+                        text = String.format(".%03d ms", state.astralTime.milliseconds),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.SemiBold
@@ -285,12 +281,12 @@ fun ClockScreen(
                             Icon(Icons.Default.AllInclusive, contentDescription = null, tint = CelestialCyan, modifier = Modifier.size(20.dp))
                             Column {
                                 Text(
-                                    text = "Deep Quantum Units & Physical Limits",
+                                    text = "Elapsed-Time Scale Conversions",
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                     color = TextPrimary
                                 )
                                 Text(
-                                    text = "Sub-atomic chronometry down to Planck time",
+                                    text = "Elapsed-time scale conversions (theoretical below nanoseconds)",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )
@@ -315,7 +311,7 @@ fun ClockScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "REAL-TIME TRIGGER: $trigger",
+                                text = "ELAPSED-TIME WINDOW: $trigger",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = AuroraGreen,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -329,12 +325,12 @@ fun ClockScreen(
                             QuantumUnitRow("Millisecond (10⁻³ s)", "${state.quantumChronometry.milliseconds} ms", "1/1,000s (Camera flash = 1ms)")
                             QuantumUnitRow("Microsecond (10⁻⁶ s)", "${state.quantumChronometry.microseconds} µs", "Eye blink ~350,000 µs | Snap ~150,000 µs")
                             QuantumUnitRow("Nanosecond (10⁻⁹ s)", "${state.quantumChronometry.nanoseconds} ns", "Distance light travels ~30 cm in 1 ns")
-                            QuantumUnitRow("Picosecond (10⁻¹² s)", "${state.quantumChronometry.picoseconds} ps", "1 ps is to 1s as 1s is to 31,689 years")
-                            QuantumUnitRow("Femtosecond (10⁻¹⁵ s)", "${state.quantumChronometry.femtoseconds} fs", "Chemical bond vibration timescale")
-                            QuantumUnitRow("Attosecond (10⁻¹⁸ s)", "${state.quantumChronometry.attoseconds} as", "Electron transit around atom")
-                            QuantumUnitRow("Zeptosecond (10⁻²¹ s)", state.quantumChronometry.zeptoseconds, "Fastest measured event in nuclear physics")
-                            QuantumUnitRow("Yoctosecond (10⁻²⁴ s)", state.quantumChronometry.yoctoseconds, "Smallest official SI prefix (Latin octo / 8)")
-                            QuantumUnitRow("Planck Time (5.39×10⁻⁴⁴ s)", state.quantumChronometry.planckTimes, "Shortest theoretical interval in quantum physics")
+                            QuantumUnitRow("Picosecond (10⁻¹² s)", "${state.quantumChronometry.picoseconds} ps", "Decimal scale conversion; not directly measured")
+                            QuantumUnitRow("Femtosecond (10⁻¹⁵ s)", "${state.quantumChronometry.femtoseconds} fs", "Decimal scale conversion; not directly measured")
+                            QuantumUnitRow("Attosecond (10⁻¹⁸ s)", "${state.quantumChronometry.attoseconds} as", "Decimal scale conversion; not directly measured")
+                            QuantumUnitRow("Zeptosecond (10⁻²¹ s)", state.quantumChronometry.zeptoseconds, "Mathematical scale conversion; not directly measured")
+                            QuantumUnitRow("Yoctosecond (10⁻²⁴ s)", state.quantumChronometry.yoctoseconds, "Mathematical scale conversion; not directly measured")
+                            QuantumUnitRow("Planck Time (5.39×10⁻⁴⁴ s)", state.quantumChronometry.planckTimes, "Ratio to the Planck-time constant; not a physical measurement")
                         }
                     }
                 }
@@ -344,7 +340,7 @@ fun ClockScreen(
         // Solar Milestones Grid
         item {
             Text(
-                text = "Astronomical Solar Milestones (Exact Horizon)",
+                text = "Estimated Astronomical Solar Milestones",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = TextPrimary
             )
@@ -568,10 +564,8 @@ fun MilestoneCard(
 }
 
 private fun computeRelativeAstral(targetMillis: Long, sunriseMillis: Long): String {
-    var diff = targetMillis - sunriseMillis
-    val dayMillis = 24L * 3600L * 1000L
-    while (diff < 0) diff += dayMillis
-    diff %= dayMillis
+    val dayMillis = 24L * 60L * 60L * 1000L
+    val diff = Math.floorMod(targetMillis - sunriseMillis, dayMillis)
     val totalSec = diff / 1000
     val h = totalSec / 3600
     val m = (totalSec % 3600) / 60

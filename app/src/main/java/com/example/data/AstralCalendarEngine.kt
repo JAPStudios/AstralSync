@@ -1,5 +1,7 @@
 package com.example.data
 
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -198,46 +200,55 @@ object AstralCalendarEngine {
     }
 
     /**
-     * Compute deep quantum chronometry down to Planck time for a given elapsed second duration.
+     * Convert elapsed seconds into progressively smaller mathematical time scales.
+     * Values below nanoseconds are scale conversions, not direct physical measurements.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun computeQuantumChronometry(elapsedSeconds: Double, currentNanos: Long): QuantumChronometry {
-        val totalMillis = (elapsedSeconds * 1000.0).toLong()
+        require(elapsedSeconds.isFinite() && elapsedSeconds >= 0.0) {
+            "Elapsed time must be a finite, non-negative number of seconds."
+        }
+
+        val elapsed = BigDecimal.valueOf(elapsedSeconds)
+        val fractionalSeconds = elapsed.remainder(BigDecimal.ONE)
         val totalMicros = (elapsedSeconds * 1_000_000.0).toLong()
-        val totalNanos = (elapsedSeconds * 1_000_000_000.0).toLong()
 
-        val subMicro = (currentNanos % 1_000_000L) / 1000L // 0..999 microseconds
+        // Trigger windows are centered on each period boundary, rather than only
+        // recognizing the interval after a boundary.
+        fun nearPeriodBoundary(periodMicros: Long, toleranceMicros: Long): Boolean {
+            val phase = Math.floorMod(totalMicros, periodMicros)
+            return minOf(phase, periodMicros - phase) <= toleranceMicros
+        }
 
-        // Triggers from user specification:
-        // Eye Blink: 350,000 µs (~350 ms)
-        // Finger Snap: 150,000 µs (~150 ms)
-        // Camera Flash: 1,000 µs (1 ms)
-        // Camera Shutter: 4,000 µs (4 ms)
         val trigger = when {
-            totalMicros % 350_000L in 0..5000 -> "👁️ Eye Blink Quantum Window (~350,000 µs)"
-            totalMicros % 150_000L in 0..5000 -> "🫰 Finger Snap Quantum Window (~150,000 µs)"
-            totalMicros % 4_000L in 0..500 -> "📸 Camera Shutter Open (~4,000 µs)"
-            totalMicros % 1_000L in 0..200 -> "⚡ Camera Flash Pulse (~1,000 µs)"
+            nearPeriodBoundary(350_000L, 5_000L) -> "👁️ Eye Blink Quantum Window (~350,000 µs)"
+            nearPeriodBoundary(150_000L, 5_000L) -> "🫰 Finger Snap Quantum Window (~150,000 µs)"
+            nearPeriodBoundary(4_000L, 500L) -> "📸 Camera Shutter Open (~4,000 µs)"
+            nearPeriodBoundary(1_000L, 200L) -> "⚡ Camera Flash Pulse (~1,000 µs)"
             else -> null
         }
 
-        // Sub-atomic units using scientific formatting
-        val picos = (totalNanos % 1_000_000_000L) * 1_000L + (currentNanos % 1000L)
-        val femtos = picos * 1000L
-        val attos = femtos * 1000L
+        // These are decimal scale conversions of elapsed time. The monotonic
+        // clock's arbitrary origin is not mixed into wall-clock measurements.
+        fun fractionalUnit(digits: Int): String = fractionalSeconds
+            .movePointRight(digits)
+            .toBigInteger()
+            .mod(BigInteger.valueOf(1000L))
+            .toString()
+            .padStart(3, '0')
 
-        // Yoctoseconds: 10^-24 s, Planck time: 5.39 x 10^-44 s
         val yoctoExp = String.format("%.3e ys", elapsedSeconds * 1e24)
         val zeptoExp = String.format("%.3e zs", elapsedSeconds * 1e21)
         val planckExp = String.format("%.2e tP", elapsedSeconds / 5.39e-44)
 
         return QuantumChronometry(
             seconds = elapsedSeconds,
-            milliseconds = totalMillis % 1000,
-            microseconds = totalMicros % 1000,
-            nanoseconds = totalNanos % 1000,
-            picoseconds = String.format("%03d", picos % 1000),
-            femtoseconds = String.format("%03d", femtos % 1000),
-            attoseconds = String.format("%03d", attos % 1000),
+            milliseconds = fractionalUnit(3).toLong(),
+            microseconds = fractionalUnit(6).toLong(),
+            nanoseconds = fractionalUnit(9).toLong(),
+            picoseconds = fractionalUnit(12),
+            femtoseconds = fractionalUnit(15),
+            attoseconds = fractionalUnit(18),
             zeptoseconds = zeptoExp,
             yoctoseconds = yoctoExp,
             planckTimes = planckExp,
