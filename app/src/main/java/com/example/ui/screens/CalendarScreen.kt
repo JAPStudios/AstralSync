@@ -93,7 +93,7 @@ fun CalendarScreen(
                         color = SolarGoldLight
                     )
                     Text(
-                        text = "Continuously counting forward from the conception (birth) of planet Earth ~4.54 billion years ago.",
+                        text = "A calendar counter using an approximate 4.54-billion-year Earth-age baseline. It advances with the Gregorian year and is not a geological age measurement.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
@@ -156,7 +156,7 @@ fun CalendarScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Current Solar Season: ${state.astralDate.seasonName}",
+                            text = "Current Astral Season: ${state.astralDate.seasonName}",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = SolarAmber
                         )
@@ -180,7 +180,7 @@ fun CalendarScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "The 4 equal astronomical seasons (91.3125 days each across 365.25 day solar year):",
+                        text = "The Astral calendar divides its fixed 365.25-day year into four equal 91.3125-day calendar seasons; these are not observed equinox-to-solstice intervals:",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextMuted
                     )
@@ -217,7 +217,7 @@ fun CalendarScreen(
         // Planetary 12-Month Order
         item {
             Text(
-                text = "The Astral Month Sequence (True Order)",
+                text = "Custom 12-Month Astral Sequence",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = TextPrimary
             )
@@ -258,7 +258,7 @@ fun CalendarScreen(
         // Mythology & Zodiac Archetypes
         item {
             Text(
-                text = "Astral Mythology & Zodiac Pantheon",
+                text = "Astral Mythology & Archetypes",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = TextPrimary
             )
@@ -293,20 +293,22 @@ fun CalendarScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("CHINESE CALENDAR YEAR", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                            Text("CHINESE ZODIAC YEAR (GREGORIAN BASIS)", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                             Text(
                                 text = "Year of the ${state.astralDate.chineseZodiac}",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 color = CelestialCyan
                             )
+                            Text("Gregorian-year basis; lunar new year is not applied.", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("MAYAN TZOLK'IN DAY SIGN", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                            Text("MAYAN 20-DAY NAME CYCLE", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                             Text(
                                 text = state.astralDate.mayanSign,
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 color = AuroraGreen
                             )
+                            Text("20 day names only; no 13-number Tzolk'in date.", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                         }
                     }
                 }
