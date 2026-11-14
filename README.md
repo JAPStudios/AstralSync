@@ -22,7 +22,7 @@ gradlew.bat :app:testDebugUnitTest
 
 The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
-The project uses the standard Android debug signing configuration. A release build must be signed with a release key supplied by the build environment before distribution. Do not commit signing keys or passwords.
+The project retains its AI Studio release and debug signing configurations. The debug keystore is supplied by the build environment; CI creates a temporary one for verification. Do not commit signing keys or passwords.
 
 ## Location
 
@@ -33,6 +33,14 @@ The application can calculate solar data for its bundled location presets. Devic
 Solar calculations use the NOAA-style fractional-year approximation. They are estimates, not an ephemeris-grade replacement for an observatory or navigation almanac. The calendar currently implements the 12-month sequence defined in `AstralCalendarEngine`; its month and season durations are part of that implementation.
 
 `System.nanoTime()` is a monotonic elapsed-time source with an arbitrary origin. It is not synchronized to the wall clock, so its digits must not be represented as the fractional part of UTC or Astral wall-clock time.
+
+### Calendar model
+
+- Gregorian dates are mapped proportionally into a fixed 365.25-day Astral year.
+- The custom calendar uses twelve equal 30.4375-day months and four equal 91.3125-day calendar seasons. These are model intervals, not measured astronomical season lengths.
+- The twelve archetypes follow equal Astral-year segments rather than standard tropical-zodiac date boundaries.
+- The Chinese zodiac label is a Gregorian-year approximation; the lunar-new-year boundary is not calculated.
+- The Mayan display is a 20-day name rotation anchored to 0001-01-01 in the proleptic Gregorian calendar. It does not calculate the full 13-number GMT-correlated Tzolk'in date.
 
 ## Tests
 
