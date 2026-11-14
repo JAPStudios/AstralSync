@@ -50,7 +50,7 @@ fun FundingStrategyScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = "NOT-FOR-PROFIT PUBLIC BENEFIT ROADMAP",
+                            text = "PUBLIC-INTEREST DEVELOPMENT ROADMAP",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
                             color = SolarGoldLight,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
