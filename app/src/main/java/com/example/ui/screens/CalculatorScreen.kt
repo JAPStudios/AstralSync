@@ -52,6 +52,9 @@ fun CalculatorScreen(
                 "Enter a valid day for the selected month and year."
             h == null || h !in 0..23 -> "Enter an hour from 0 through 23."
             min == null || min !in 0..59 -> "Enter a minute from 0 through 59."
+            !AstralCalendarEngine.isValidLocalDateTime(
+                y, m, d, h, min, TimeZone.getTimeZone(state.calcLocation.timeZoneId)
+            ) -> "That local time does not exist because of a time-zone clock change."
             else -> null
         }
         if (inputError != null) return
