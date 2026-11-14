@@ -107,7 +107,6 @@ class ExampleUnitTest {
 
     @Test
     fun testMayanTwentyDayNameCycleAdvancesAcrossLeapDay() {
-        val utc = TimeZone.getTimeZone("UTC")
         fun result(date: String) = AstralCalendarEngine.calculateAstralDate(
             java.time.Instant.parse(date).toEpochMilli()
         )
