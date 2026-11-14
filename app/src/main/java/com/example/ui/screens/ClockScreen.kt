@@ -311,7 +311,7 @@ fun ClockScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "REAL-TIME TRIGGER: $trigger",
+                                text = "ELAPSED-TIME WINDOW: $trigger",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = AuroraGreen,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -325,9 +325,9 @@ fun ClockScreen(
                             QuantumUnitRow("Millisecond (10⁻³ s)", "${state.quantumChronometry.milliseconds} ms", "1/1,000s (Camera flash = 1ms)")
                             QuantumUnitRow("Microsecond (10⁻⁶ s)", "${state.quantumChronometry.microseconds} µs", "Eye blink ~350,000 µs | Snap ~150,000 µs")
                             QuantumUnitRow("Nanosecond (10⁻⁹ s)", "${state.quantumChronometry.nanoseconds} ns", "Distance light travels ~30 cm in 1 ns")
-                            QuantumUnitRow("Picosecond (10⁻¹² s)", "${state.quantumChronometry.picoseconds} ps", "1 ps is to 1s as 1s is to 31,689 years")
-                            QuantumUnitRow("Femtosecond (10⁻¹⁵ s)", "${state.quantumChronometry.femtoseconds} fs", "Chemical bond vibration timescale")
-                            QuantumUnitRow("Attosecond (10⁻¹⁸ s)", "${state.quantumChronometry.attoseconds} as", "Electron transit around atom")
+                            QuantumUnitRow("Picosecond (10⁻¹² s)", "${state.quantumChronometry.picoseconds} ps", "Decimal scale conversion; not directly measured")
+                            QuantumUnitRow("Femtosecond (10⁻¹⁵ s)", "${state.quantumChronometry.femtoseconds} fs", "Decimal scale conversion; not directly measured")
+                            QuantumUnitRow("Attosecond (10⁻¹⁸ s)", "${state.quantumChronometry.attoseconds} as", "Decimal scale conversion; not directly measured")
                             QuantumUnitRow("Zeptosecond (10⁻²¹ s)", state.quantumChronometry.zeptoseconds, "Mathematical scale conversion; not directly measured")
                             QuantumUnitRow("Yoctosecond (10⁻²⁴ s)", state.quantumChronometry.yoctoseconds, "Mathematical scale conversion; not directly measured")
                             QuantumUnitRow("Planck Time (5.39×10⁻⁴⁴ s)", state.quantumChronometry.planckTimes, "Ratio to the Planck-time constant; not a physical measurement")
